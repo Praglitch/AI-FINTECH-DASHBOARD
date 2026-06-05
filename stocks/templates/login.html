@@ -305,18 +305,35 @@
 
                 <div class="field">
                     <label>Username:</label>
-                    <input type="text" name="username">
+                    <input
+    type="text"
+    name="username"
+    id="username"
+    autofocus
+>
                 </div>
 
                 <div class="field">
                     <label>Password:</label>
-                    <input type="password" name="password">
+                    <input type="password" name="password" id="password">
                 </div>
 
                 <button type="submit">Login</button>
             </form>
         </section>
     </div>
+
+<script>
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
+
+    usernameField.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            passwordField.focus();
+        }
+    });
+</script>
 
 </body>
 </html>

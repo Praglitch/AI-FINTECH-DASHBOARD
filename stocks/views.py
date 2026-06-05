@@ -9,8 +9,16 @@ from .services.company_service import (
     search_company_data,
     get_company_details_data
 )
+from .services.financial_service import get_company_financials_data
+from .services.news_service import get_company_news_data
+from .services.market_service import get_company_market_data
 
 
+
+
+
+
+#LOGIN PAGE
 def login_page(request):
 
     if request.method == "POST":
@@ -35,13 +43,19 @@ def login_page(request):
 
     return render(request, "login.html")
 
+
+#HOME PAGE
 @login_required
 def home(request):
     return render(request, "home.html")
 
 
-@login_required
 
+
+
+
+#SEARCH COMPANY
+@login_required
 def search_companies(request):
 
     query = request.GET.get("q", "")
@@ -51,6 +65,10 @@ def search_companies(request):
     return JsonResponse(data, safe=False)
 
 
+
+
+
+#COMPANY DETAILS
 @login_required
 def company_details(request, fincode):
 
@@ -64,77 +82,38 @@ def company_details(request, fincode):
 
     return JsonResponse(data)
     
+    
+    
+    
+#COMPANY NEWS
 @login_required
 def company_news(request, fincode):
 
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            heading,
-            date
-        FROM news_master
-        WHERE fincode = %s
-        ORDER BY date DESC
-        LIMIT 10
-    """, [str(fincode)])
-
-    rows = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    news = []
-
-    for row in rows:
-        news.append({
-            "heading": row[0],
-            "date": row[1].strftime("%d %b %Y")
-        })
+    news = get_company_news_data(fincode)
 
     return JsonResponse(news, safe=False)
 
+
+
+#COMPANY FINANCIALS
 @login_required
 def company_financials(request, fincode):
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    data = get_company_financials_data(fincode)
 
-    cursor.execute("""
-        SELECT
-            year_end,
-            net_sales,
-            operating_profit,
-            profit_after_tax,
-            reported_eps,
-            dividend_perc
-        FROM finance_cons_pl
-        WHERE fincode = %s
-        ORDER BY year_end DESC
-        LIMIT 1
-    """, [str(fincode)])
-
-    row = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    if not row:
+    if not data:
         return JsonResponse(
             {"error": "Financials not found"},
             status=404
         )
 
-    return JsonResponse({
-        "year_end": row[0],
-        "net_sales": row[1],
-        "operating_profit": row[2],
-        "profit_after_tax": row[3],
-        "reported_eps": row[4],
-        "dividend_perc": row[5]
-    })
+    return JsonResponse(data)
     
+    
+    
+    
+    
+#COMPANY ANNOUNCEMENTS
 @login_required
 def company_announcements(request, fincode):
 
@@ -188,51 +167,27 @@ def company_announcements(request, fincode):
         announcements,
         safe=False
     )
-    
+
+
+
+
+#COMPANY MARKET SNAPSHOT
 @login_required
 def company_market(request, fincode):
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    data = get_company_market_data(fincode)
 
-    cursor.execute("""
-        SELECT
-            open,
-            high,
-            low,
-            close,
-            volume,
-            value,
-            month,
-            year
-        FROM monthlyprice
-        WHERE fincode = %s
-        ORDER BY year DESC, month DESC
-        LIMIT 1
-    """, [fincode])
-
-    row = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    if not row:
+    if not data:
         return JsonResponse(
             {"error": "Market data not found"},
             status=404
         )
 
-    return JsonResponse({
-        "open": row[0],
-        "high": row[1],
-        "low": row[2],
-        "close": row[3],
-        "volume": row[4],
-        "value": row[5],
-        "month": row[6],
-        "year": row[7]
-    })
-    
+    return JsonResponse(data)
+
+
+
+#MCOMPANY SHAREHOLDING
 @login_required
 def company_shareholding(request, fincode):
 
@@ -270,6 +225,11 @@ def company_shareholding(request, fincode):
         "mutual_fund": row[3],
         "fpi": row[4]
     })
+    
+    
+    
+
+#COMPANY CORPORATE ACTIONS
 @login_required   
 def company_corporate_actions(request, fincode):
     conn = get_connection()
@@ -325,6 +285,10 @@ def test_ollama(request):
         "response": data["response"]
     })
     
+    
+    
+    
+#COMPANY AI SUMMARY
 @login_required
 def company_ai_summary(request, fincode):
 
