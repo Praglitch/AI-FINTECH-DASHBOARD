@@ -654,3 +654,63 @@
             text-align: center;
             font-size: 14px;
         }
+
+        .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-dim);
+}
+
+.empty-state h2 {
+    margin-bottom: 12px;
+}
+
+.empty-state p {
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.empty-state-examples {
+    margin-top: 24px;
+
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+
+    flex-wrap: wrap;
+}
+
+.empty-state-examples div {
+    padding: 10px 14px;
+
+    border-radius: 8px;
+
+    background: #1e293b;
+    color: #cbd5e1;
+
+    font-size: 13px;
+}
+
+.error-toast {
+    position: fixed;
+
+    top: 20px;
+    right: 20px;
+
+    background: #dc2626;
+    color: white;
+
+    padding: 12px 16px;
+
+    border-radius: 8px;
+
+    z-index: 9999;
+
+    display: none;
+}   

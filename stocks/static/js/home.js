@@ -4,6 +4,7 @@
         const dashboardContent = document.getElementById('dashboardContent');
 
         let selectedFincode = null;
+        let currentSearchResults = [];
 
         searchInput.addEventListener('keyup', async (e) => {
             const query = searchInput.value.trim();
@@ -14,15 +15,36 @@
             }
 
             try {
-                const response = await fetch(`/search/?q=${encodeURIComponent(query)}`);
-                const data = await response.json();
 
-                searchResults.innerHTML = '';
+    searchResults.innerHTML = `
+        <div class="search-result-item">
+            Searching...
+        </div>
+    `;
 
-                if (data.length === 0) {
-                    searchResults.classList.remove('visible');
-                    return;
-                }
+    searchResults.classList.add('visible');
+
+    const response = await fetch(
+        `/search/?q=${encodeURIComponent(query)}`
+    );
+
+    const data = await response.json();
+
+    currentSearchResults = data;
+
+    searchResults.innerHTML = '';
+
+    if (data.length === 0) {
+
+        searchResults.innerHTML = `
+            <div class="search-result-item">
+                No companies found
+            </div>
+        `;
+
+        return;
+    }
+
 
                 data.forEach(company => {
                     const item = document.createElement('div');
@@ -37,8 +59,17 @@
 
                 searchResults.classList.add('visible');
             } catch (error) {
-                console.error('Search error:', error);
-            }
+
+    console.error(error);
+
+    searchResults.innerHTML = `
+        <div class="search-result-item">
+            Unable to search companies
+        </div>
+    `;
+
+    searchResults.classList.add('visible');
+}
         });
 
         async function selectCompany(fincode) {
@@ -66,9 +97,13 @@ document.getElementById('loader-overlay').style.display = 'flex';
                 dashboardContent.classList.add('active');
 
                 document.getElementById('loader-overlay').style.display = 'none';
-            } catch (error) {
+            } catch(error) {
+
     document.getElementById('loader-overlay').style.display = 'none';
+
     console.error('Error loading company data:', error);
+
+    showError('Unable to load company data');
 }
         }
 
@@ -171,7 +206,7 @@ document.getElementById('loader-overlay').style.display = 'flex';
             container.innerHTML = actions.actions.map(item => `
                 <div class="action-item">
                     <div class="item-title">${item.details}</div>
-                    <div class="item-date">${item.sdate}</div>
+                    <div class="item-date">${item.date}</div>
                 </div>
             `).join('');
         }
@@ -211,3 +246,16 @@ document.getElementById('loader-overlay').style.display = 'flex';
                 searchResults.classList.remove('visible');
             }
         });
+
+        
+function showError(message) {
+
+    const toast = document.getElementById('errorToast');
+
+    toast.textContent = message;
+    toast.style.display = 'block';
+
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 3000);
+}

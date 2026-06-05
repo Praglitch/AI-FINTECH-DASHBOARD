@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 <body>
+
+    <div id="errorToast" class="error-toast">
+    Something went wrong
+</div>
+
    <div id="loader-overlay" style="display:none;">
     <div class="loader-content">
         <div class="spinner"></div>
@@ -29,6 +34,7 @@
                         class="search-input"
                         placeholder="Search company, symbol, or fincode..."
                         autocomplete="off"
+                        autofocus
                     >
                 </div>
                 <div id="searchResults" class="search-results"></div>
@@ -36,10 +42,26 @@
         </header>
 
         <main class="main-content">
-            <div id="noResults" style="text-align: center; padding: 60px 20px; color: var(--text-dim);">
-                <p style="font-size: 16px; margin-bottom: 8px;">Search for a company to get started</p>
-                <p style="font-size: 14px;">Enter a company name, symbol, or fincode</p>
-            </div>
+            <div id="noResults" class="empty-state">
+
+    <div class="empty-state-icon">🔍</div>
+
+    <h2>Search for a Company</h2>
+
+    <p>
+        Get detailed insights including financials,
+        market performance, shareholding patterns,
+        announcements, news and AI analysis.
+    </p>
+
+    <div class="empty-state-examples">
+        <div>Reliance Industries</div>
+        <div>Tata Consultancy Services</div>
+        <div>Infosys</div>
+        <div>HDFC Bank</div>
+    </div>
+
+</div>
 
             <div id="dashboardContent" class="content-wrapper">
                 <!-- Hero Section -->
