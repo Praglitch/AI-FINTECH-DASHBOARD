@@ -6,71 +6,91 @@
         let selectedFincode = null;
         let currentSearchResults = [];
 
-        searchInput.addEventListener('keyup', async (e) => {
-            const query = searchInput.value.trim();
+        async function performSearch() {
 
-            if (query.length < 1) {
-                searchResults.classList.remove('visible');
-                return;
-            }
+    const query = searchInput.value.trim();
 
-            try {
-
-    searchResults.innerHTML = `
-        <div class="search-result-item">
-            Searching...
-        </div>
-    `;
-
-    searchResults.classList.add('visible');
-
-    const response = await fetch(
-        `/search/?q=${encodeURIComponent(query)}`
-    );
-
-    const data = await response.json();
-
-    currentSearchResults = data;
-
-    searchResults.innerHTML = '';
-
-    if (data.length === 0) {
-
-        searchResults.innerHTML = `
-            <div class="search-result-item">
-                No companies found
-            </div>
-        `;
-
+    if (query.length < 1) {
+        searchResults.classList.remove('visible');
         return;
     }
 
+    try {
 
-                data.forEach(company => {
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.innerHTML = `
-                        <div class="search-result-name">${company.compname}</div>
-                        <div class="search-result-meta">${company.symbol || 'N/A'} • ${company.fincode}</div>
-                    `;
-                    item.onclick = () => selectCompany(company.fincode);
-                    searchResults.appendChild(item);
-                });
+        searchResults.innerHTML = `
+            <div class="search-result-item">
+                Searching...
+            </div>
+        `;
 
-                searchResults.classList.add('visible');
-            } catch (error) {
+        searchResults.classList.add('visible');
 
-    console.error(error);
+        const response = await fetch(
+            `/search/?q=${encodeURIComponent(query)}`
+        );
 
-    searchResults.innerHTML = `
+        const data = await response.json();
+
+        currentSearchResults = data;
+
+        searchResults.innerHTML = '';
+
+        if (data.length === 0) {
+
+            searchResults.innerHTML = `
+                <div class="search-result-item">
+                    No companies found
+                </div>
+            `;
+
+            return;
+        }
+
+        data.forEach(company => {
+
+    const item = document.createElement('div');
+
+    item.className = 'search-result-item';
+
+    item.innerHTML = `
+        <div class="search-result-name">${company.compname}</div>
+        <div class="search-result-meta">
+            ${company.symbol || 'N/A'} • ${company.fincode}
+        </div>
+    `;
+
+    item.onclick = () => selectCompany(company.fincode);
+
+    searchResults.appendChild(item);
+
+});
+
+    } catch(error) {
+
+        console.error(error);
+
+        searchResults.innerHTML = `
         <div class="search-result-item">
             Unable to search companies
         </div>
     `;
 
     searchResults.classList.add('visible');
+
+    }
 }
-        });
+let searchTimeout;
+       searchInput.addEventListener('input', () => {
+
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(() => {
+        performSearch();
+    }, 300);
+
+});
+
+    
 
         async function selectCompany(fincode) {
             selectedFincode = fincode;
