@@ -4,7 +4,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .database.db_connection import get_connection
 from .services.company_service import (
     search_company_data,
     get_company_details_data
@@ -14,8 +13,7 @@ from .services.news_service import get_company_news_data
 from .services.market_service import get_company_market_data
 from .services.shareholding_service import get_company_shareholding_data
 from .services.announcement_service import get_company_announcements_data
-
-
+from .services.corporate_actions_service import get_company_corporate_actions_data
 
 
 #LOGIN PAGE
@@ -115,6 +113,8 @@ def company_financials(request, fincode):
     
     
     
+    
+    
 #COMPANY ANNOUNCEMENTS
 @login_required
 def company_announcements(request, fincode):
@@ -134,6 +134,8 @@ def company_announcements(request, fincode):
 
 
 
+
+
 #COMPANY MARKET SNAPSHOT
 @login_required
 def company_market(request, fincode):
@@ -150,7 +152,10 @@ def company_market(request, fincode):
 
 
 
-#MCOMPANY SHAREHOLDING
+
+
+
+#COMPANY SHAREHOLDING
 @login_required
 def company_shareholding(request, fincode):
 
@@ -166,43 +171,22 @@ def company_shareholding(request, fincode):
     
     
     
+    
+    
 
 #COMPANY CORPORATE ACTIONS
-@login_required   
+@login_required
 def company_corporate_actions(request, fincode):
-    conn = get_connection()
-    cur = conn.cursor()
 
-    cur.execute("""
-        SELECT
-            sdate,
-            details,
-            amount,
-            ratio1
-        FROM corporate_actions_data
-        WHERE fincode = %s
-        ORDER BY sdate DESC
-        LIMIT 10
-    """, [fincode])
-
-    rows = cur.fetchall()
-
-    actions = []
-
-    for row in rows:
-        actions.append({
-            "date": row[0].strftime("%d %b %Y") if row[0] else "",
-            "details": row[1],
-            "amount": row[2],
-            "ratio": row[3]
-        })
-
-    cur.close()
-    conn.close()
+    actions = get_company_corporate_actions_data(fincode)
 
     return JsonResponse({
         "actions": actions
     })
+ 
+ 
+ 
+ 
  
  
  
@@ -227,23 +211,15 @@ def test_ollama(request):
     })
     
     
-    
-    
-    
-    
+ 
 #COMPANY AI SUMMARY
 @login_required
 def company_ai_summary(request, fincode):
 
-    company_response = company_details(request, fincode)
-    financial_response = company_financials(request, fincode)
-    shareholding_response = company_shareholding(request, fincode)
-    market_response = company_market(request, fincode)
-
-    company = json.loads(company_response.content)
-    financials = json.loads(financial_response.content)
-    shareholding = json.loads(shareholding_response.content)
-    market = json.loads(market_response.content)
+    company = get_company_details_data(fincode)
+    financials = get_company_financials_data(fincode)
+    shareholding = get_company_shareholding_data(fincode)
+    market = get_company_market_data(fincode)
 
     prompt = f"""
     Analyze this company.
