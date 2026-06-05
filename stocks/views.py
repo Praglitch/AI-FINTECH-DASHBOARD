@@ -12,8 +12,8 @@ from .services.company_service import (
 from .services.financial_service import get_company_financials_data
 from .services.news_service import get_company_news_data
 from .services.market_service import get_company_market_data
-
-
+from .services.shareholding_service import get_company_shareholding_data
+from .services.announcement_service import get_company_announcements_data
 
 
 
@@ -95,6 +95,8 @@ def company_news(request, fincode):
 
 
 
+
+
 #COMPANY FINANCIALS
 @login_required
 def company_financials(request, fincode):
@@ -117,57 +119,18 @@ def company_financials(request, fincode):
 @login_required
 def company_announcements(request, fincode):
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    announcements = get_company_announcements_data(fincode)
 
-    cursor.execute("""
-        SELECT scripcode
-        FROM company_master
-        WHERE fincode = %s
-        LIMIT 1
-    """, [fincode])
-
-    company = cursor.fetchone()
-
-    if not company:
-        cursor.close()
-        conn.close()
-
+    if announcements is None:
         return JsonResponse(
             {"error": "Company not found"},
             status=404
         )
 
-    scripcode = company[0]
-
-    cursor.execute("""
-        SELECT
-            caption,
-            datetime
-        FROM bse_announcements
-        WHERE scripcode = %s
-        ORDER BY datetime DESC
-        LIMIT 10
-    """, [scripcode])
-
-    rows = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    announcements = []
-
-    for row in rows:
-        announcements.append({
-            "caption": row[0],
-            "datetime": row[1].strftime("%d %b %Y %H:%M")
-        })
-
     return JsonResponse(
         announcements,
         safe=False
     )
-
 
 
 
@@ -191,40 +154,15 @@ def company_market(request, fincode):
 @login_required
 def company_shareholding(request, fincode):
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    data = get_company_shareholding_data(fincode)
 
-    cursor.execute("""
-        SELECT
-            date_end,
-            tpftotalpromoter,
-            tptotalpublic,
-            tpinmfuti,
-            tpinforeignportinv
-        FROM shpsummary
-        WHERE fincode = %s
-        ORDER BY date_end DESC
-        LIMIT 1
-    """, [fincode])
-
-    row = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    if not row:
+    if not data:
         return JsonResponse(
             {"error": "Shareholding data not found"},
             status=404
         )
 
-    return JsonResponse({
-        "date_end": row[0],
-        "promoter": row[1],
-        "public": row[2],
-        "mutual_fund": row[3],
-        "fpi": row[4]
-    })
+    return JsonResponse(data)
     
     
     
@@ -266,6 +204,9 @@ def company_corporate_actions(request, fincode):
         "actions": actions
     })
  
+ 
+ 
+ 
  # TEMPORARY TEST ENDPOINT   
 @login_required
 def test_ollama(request):
@@ -284,6 +225,8 @@ def test_ollama(request):
     return JsonResponse({
         "response": data["response"]
     })
+    
+    
     
     
     
