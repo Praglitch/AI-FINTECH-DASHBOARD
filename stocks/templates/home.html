@@ -22,23 +22,29 @@
 </div>
     <div class="app-container">
         <header class="header-sticky">
-            <div class="search-container" style="position: relative;">
-                <div class="search-wrapper">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-dim); flex-shrink: 0;">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.35-4.35"></path>
-                    </svg>
-                    <input
-                        type="text"
-                        id="companySearch"
-                        class="search-input"
-                        placeholder="Search company, symbol, or fincode..."
-                        autocomplete="off"
-                        autofocus
-                    >
-                </div>
-                <div id="searchResults" class="search-results"></div>
-            </div>
+           <div class="search-container" style="position: relative;">
+    <div class="search-wrapper">
+
+        <input
+            type="text"
+            id="companySearch"
+            class="search-input"
+            placeholder="Search company, symbol, or fincode..."
+            autocomplete="off"
+            autofocus
+        >
+
+        <button
+            id="clearSearch"
+            class="clear-search"
+        >
+            ✕
+        </button>
+
+    </div>
+
+    <div id="searchResults" class="search-results"></div>
+</div>
         </header>
 
         <main class="main-content">
@@ -55,11 +61,24 @@
     </p>
 
     <div class="empty-state-examples">
-        <div>Reliance Industries</div>
-        <div>Tata Consultancy Services</div>
-        <div>Infosys</div>
-        <div>HDFC Bank</div>
+
+    <div class="example-company">
+        Reliance Industries
     </div>
+
+    <div class="example-company">
+        TCS
+    </div>
+
+    <div class="example-company">
+        Infosys
+    </div>
+
+    <div class="example-company">
+        HDFC Bank
+    </div>
+
+</div>
 
 </div>
 

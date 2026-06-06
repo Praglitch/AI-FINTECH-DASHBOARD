@@ -714,3 +714,24 @@
 
     display: none;
 }   
+
+.clear-search {
+    display: none;
+}
+
+.example-company {
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.example-company:hover {
+
+    transform: translateY(-2px);
+
+    background: #334155;
+
+    color: white;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}

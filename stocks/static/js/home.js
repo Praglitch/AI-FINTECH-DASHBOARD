@@ -1,7 +1,9 @@
- const searchInput = document.getElementById('companySearch');
+        const searchInput = document.getElementById('companySearch');
         const searchResults = document.getElementById('searchResults');
         const noResults = document.getElementById('noResults');
         const dashboardContent = document.getElementById('dashboardContent');
+        const clearButton = document.getElementById('clearSearch');
+        
 
         let selectedFincode = null;
         let currentSearchResults = [];
@@ -9,6 +11,12 @@
         async function performSearch() {
 
     const query = searchInput.value.trim();
+
+    if (query.length > 0) {
+    clearButton.style.display = 'block';
+} else {
+    clearButton.style.display = 'none';
+}
 
     if (query.length < 1) {
         searchResults.classList.remove('visible');
@@ -82,11 +90,16 @@
 let searchTimeout;
        searchInput.addEventListener('input', () => {
 
+    clearButton.style.display =
+        searchInput.value.trim()
+            ? 'block'
+            : 'none';
+
     clearTimeout(searchTimeout);
 
     searchTimeout = setTimeout(() => {
         performSearch();
-    }, 300);
+    }, 100);
 
 });
 
@@ -260,13 +273,21 @@ document.getElementById('loader-overlay').style.display = 'flex';
             });
         });
 
-        // Close search results when clicking outside
+        
         document.addEventListener('click', (e) => {
-            if (e.target !== searchInput && !searchResults.contains(e.target)) {
-                searchResults.classList.remove('visible');
-            }
-        });
 
+    const clickedExampleCompany =
+        e.target.closest('.example-company');
+
+    if (
+        e.target !== searchInput &&
+        !searchResults.contains(e.target) &&
+        !clickedExampleCompany
+    ) {
+        searchResults.classList.remove('visible');
+    }
+
+});
         
 function showError(message) {
 
@@ -279,3 +300,42 @@ function showError(message) {
         toast.style.display = 'none';
     }, 3000);
 }
+
+clearButton.addEventListener('click', () => {
+
+    searchInput.value = '';
+
+    currentSearchResults = [];
+
+    searchResults.classList.remove('visible');
+
+    clearButton.style.display = 'none';
+
+    searchInput.focus();
+
+});
+
+
+const exampleCompanies =
+    document.querySelectorAll('.example-company');
+
+    exampleCompanies.forEach(company => {
+
+    company.addEventListener('click', () => {
+
+        console.log(
+    company.textContent.trim()
+);
+
+        searchInput.value =
+            company.textContent.trim();
+
+        clearButton.style.display = 'block';
+
+        performSearch();
+
+        searchInput.focus();
+
+    });
+
+});
