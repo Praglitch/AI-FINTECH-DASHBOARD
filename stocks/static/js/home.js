@@ -4,7 +4,8 @@
         const dashboardContent = document.getElementById('dashboardContent');
         const clearButton = document.getElementById('clearSearch');
         const searchLoader = document.getElementById('searchLoader');
-        
+        const mainContent =
+    document.querySelector('.main-content');
 
         let selectedFincode = null;
 
@@ -66,7 +67,13 @@
         </div>
     `;
 
-    item.onclick = () => selectCompany(company.fincode);
+    item.onclick = () => {
+
+    searchInput.value = company.compname;
+
+    selectCompany(company.fincode);
+
+};
 
     searchResults.appendChild(item);
 
@@ -110,6 +117,8 @@ let searchTimeout;
 
 searchLoader.style.display = 'block';
 clearButton.style.display = 'none';
+noResults.classList.add('loading-blur');
+dashboardContent.classList.add('loading-blur');
 
             try {
                 const [company, market, shareholding, ai, financials, announcements, news, actions] = await Promise.all([
@@ -129,6 +138,8 @@ console.log("BEFORE UPDATE");
                 dashboardContent.classList.add('active');
 console.log("AFTER UPDATE");
                 searchLoader.style.display = 'none';
+                noResults.classList.remove('loading-blur');
+dashboardContent.classList.remove('loading-blur');
 
 if (searchInput.value.trim()) {
     clearButton.style.display = 'block';
@@ -136,6 +147,8 @@ if (searchInput.value.trim()) {
             } catch(error) {
 
     searchLoader.style.display = 'none';
+    noResults.classList.remove('loading-blur');
+dashboardContent.classList.remove('loading-blur');
 
 if (searchInput.value.trim()) {
     clearButton.style.display = 'block';

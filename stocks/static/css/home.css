@@ -714,3 +714,9 @@
     position: relative;
 }
     
+.loading-blur {
+    filter: blur(4px);
+    opacity: 0.7;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
