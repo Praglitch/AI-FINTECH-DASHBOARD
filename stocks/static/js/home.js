@@ -122,12 +122,12 @@ clearButton.style.display = 'none';
                     fetch(`/company/${fincode}/news/`).then(r => r.json()),
                     fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json())
                 ]);
-
+console.log("BEFORE UPDATE");
                 updateDashboard(company, market, shareholding, ai, financials, announcements, news, actions);
 
                 noResults.style.display = 'none';
                 dashboardContent.classList.add('active');
-
+console.log("AFTER UPDATE");
                 searchLoader.style.display = 'none';
 
 if (searchInput.value.trim()) {
