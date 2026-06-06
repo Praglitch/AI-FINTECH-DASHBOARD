@@ -3,6 +3,7 @@
         const noResults = document.getElementById('noResults');
         const dashboardContent = document.getElementById('dashboardContent');
         const clearButton = document.getElementById('clearSearch');
+        const searchLoader = document.getElementById('searchLoader');
         
 
         let selectedFincode = null;
@@ -109,8 +110,10 @@ let searchTimeout;
             selectedFincode = fincode;
             searchResults.classList.remove('visible');
 
-
-document.getElementById('loader-overlay').style.display = 'flex';
+console.log('SHOWING LOADER');
+searchLoader.style.display = 'block';
+console.log(searchLoader);
+clearButton.style.display = 'none';
 
             try {
                 const [company, market, shareholding, ai, financials, announcements, news, actions] = await Promise.all([
@@ -129,10 +132,18 @@ document.getElementById('loader-overlay').style.display = 'flex';
                 noResults.style.display = 'none';
                 dashboardContent.classList.add('active');
 
-                document.getElementById('loader-overlay').style.display = 'none';
+                searchLoader.style.display = 'none';
+
+if (searchInput.value.trim()) {
+    clearButton.style.display = 'block';
+}
             } catch(error) {
 
-    document.getElementById('loader-overlay').style.display = 'none';
+    searchLoader.style.display = 'none';
+
+if (searchInput.value.trim()) {
+    clearButton.style.display = 'block';
+}
 
     console.error('Error loading company data:', error);
 

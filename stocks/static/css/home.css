@@ -61,6 +61,23 @@
             width: 100%;
         }
 
+
+        .search-loader {
+            width: 14px;
+            height: 14px;
+
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top: 2px solid white;
+
+            border-radius: 50%;
+
+            animation: searchSpin 0.7s linear infinite;
+
+            display: none;
+
+            flex-shrink: 0;
+}
+
         .search-wrapper {
             display: flex;
             align-items: center;
@@ -734,4 +751,16 @@
     color: white;
 
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+@keyframes searchSpin {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+
 }
