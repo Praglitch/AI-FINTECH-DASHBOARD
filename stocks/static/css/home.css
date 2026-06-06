@@ -106,60 +106,10 @@
             padding: 0;
             font-weight: 500;
 
-        }#loader-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    background: rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(4px);
+    
 
 
-    display: none;
 
-    justify-content: center;
-    align-items: center;
-
-    z-index: 9999;
-}
-
-.loader-content {
-    background: #1e293b;
-    padding: 30px 40px;
-    border-radius: 16px;
-
-    text-align: center;
-
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-.loader-content p {
-    color: #cbd5e1;
-    margin-top: 12px;
-    font-size: 14px;
-}
-
-.spinner {
-    width: 60px;
-    height: 60px;
-
-    border: 6px solid #ddd;
-    border-top: 6px solid #2563eb;
-
-    border-radius: 50%;
-
-    animation: spin 1s linear infinite;
-
-    margin: auto;
-    margin-bottom: 20px;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
 
         .search-input::placeholder {
             color: var(--text-dim);
@@ -606,12 +556,7 @@
             color: var(--text-dim);
         }
 
-        .empty-state {
-            padding: 32px;
-            text-align: center;
-            color: var(--text-dim);
-        }
-
+       
         .section-divider {
             height: 1px;
             background: var(--border-subtle);
@@ -734,6 +679,7 @@
 
 .clear-search {
     display: none;
+    cursor: pointer;
 }
 
 .example-company {
@@ -763,4 +709,7 @@
         transform: rotate(360deg);
     }
 
+}
+.search-container {
+    position: relative;
 }

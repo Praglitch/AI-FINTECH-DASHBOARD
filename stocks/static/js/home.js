@@ -7,7 +7,6 @@
         
 
         let selectedFincode = null;
-        let currentSearchResults = [];
 
         async function performSearch() {
 
@@ -40,7 +39,6 @@
 
         const data = await response.json();
 
-        currentSearchResults = data;
 
         searchResults.innerHTML = '';
 
@@ -110,9 +108,7 @@ let searchTimeout;
             selectedFincode = fincode;
             searchResults.classList.remove('visible');
 
-console.log('SHOWING LOADER');
 searchLoader.style.display = 'block';
-console.log(searchLoader);
 clearButton.style.display = 'none';
 
             try {
@@ -316,8 +312,6 @@ clearButton.addEventListener('click', () => {
 
     searchInput.value = '';
 
-    currentSearchResults = [];
-
     searchResults.classList.remove('visible');
 
     clearButton.style.display = 'none';
@@ -334,9 +328,7 @@ const exampleCompanies =
 
     company.addEventListener('click', () => {
 
-        console.log(
-    company.textContent.trim()
-);
+
 
         searchInput.value =
             company.textContent.trim();
