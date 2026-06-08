@@ -31,7 +31,8 @@ from stocks.views import (
     test_ollama,
     company_ai_summary,
     company_openai_summary,
-    company_yfinance
+    company_yfinance,
+    company_chat
 )
 
 urlpatterns = [
@@ -105,6 +106,12 @@ urlpatterns = [
 path(
     "company/<int:fincode>/openai-summary/",
     company_openai_summary,
+),
+
+path(
+    "company/<int:fincode>/chat/",
+    company_chat,
+    name="company_chat"
 ),
 
 path(

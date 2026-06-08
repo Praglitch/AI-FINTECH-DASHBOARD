@@ -1,5 +1,9 @@
+import json
+from urllib import response
+from xmlrpc import client
 import requests
 import os
+from openai import OpenAI
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -15,7 +19,7 @@ from .services.shareholding_service import get_company_shareholding_data
 from .services.announcement_service import get_company_announcements_data
 from .services.corporate_actions_service import get_company_corporate_actions_data
 from .services.yfinance_services import get_yfinance_data
-
+from django.views.decorators.csrf import csrf_exempt
 
 #LOGIN PAGE
 def login_page(request):
@@ -258,6 +262,7 @@ def company_ai_summary(request, fincode):
     })
     
     
+    
 #COMPANY AI SUMMARY - OPENAI
 @login_required
 def company_openai_summary(request, fincode):
@@ -303,9 +308,98 @@ def company_openai_summary(request, fincode):
         response.choices[0].message.content
     })
     
+   
+   
+#RAG COMPANY CHAT   
+@login_required
+@csrf_exempt
+def company_chat(request, fincode):
+    
+    if request.method != "POST":
+        return JsonResponse({
+        "error": "POST request required"
+    }, status=405)
+
+    body = json.loads(request.body)
+
+    question = body.get("question")
+
+    company = get_company_details_data(fincode)
+
+    financials = get_company_financials_data(fincode)
+
+    market = get_company_market_data(fincode)
+
+    shareholding = get_company_shareholding_data(fincode)
+
+    news = get_company_news_data(fincode)
+
+    yfinance = get_yfinance_data(fincode)
+
+    context = f"""
+    Company:
+    {company}
+
+    Financials:
+    {financials}
+
+    Market:
+    {market}
+
+    Shareholding:
+    {shareholding}
+
+    News:
+    {news}
+
+    Yahoo Finance:
+    {yfinance}
+    """
+    
+    prompt = f"""
+    You are a financial analyst.
+
+    Use only the provided information.
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+
+    Answer clearly.
+    """
+    
+    client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+    response = client.chat.completions.create(
+    model="gpt-4.1-mini",
+    messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
+    
+)
+    
+
+
+
+    return JsonResponse({
+        "answer": response.choices[0].message.content
+})
+    
+    
+    
+    
+#YAHOO FINANCE DATA
 @login_required
 def company_yfinance(request, fincode):
 
     data = get_yfinance_data(fincode)
 
     return JsonResponse(data)
+

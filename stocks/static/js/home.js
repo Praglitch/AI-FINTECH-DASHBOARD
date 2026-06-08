@@ -4,8 +4,10 @@
         const dashboardContent = document.getElementById('dashboardContent');
         const clearButton = document.getElementById('clearSearch');
         const searchLoader = document.getElementById('searchLoader');
-        const mainContent =
-    document.querySelector('.main-content');
+        const mainContent = document.querySelector('.main-content');
+        const askAIButton = document.getElementById('askAIButton');
+        const ai = document.getElementById('aiQuestion');
+        const aiAnswer = document.getElementById('aiAnswer');
   
     
 
@@ -459,3 +461,36 @@ function renderStockChart(chartData) {
         }
     });
 }
+
+
+askAIButton.addEventListener(
+    'click',
+    async () => {
+
+        const question =
+            aiQuestion.value.trim();
+
+        if (!question) {
+            return;
+        }
+
+        const response = await fetch(
+            `/company/${currentFincode}/chat/`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    question
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        aiAnswer.textContent =
+            data.answer;
+    }
+);
