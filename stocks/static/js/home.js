@@ -6,8 +6,10 @@
         const searchLoader = document.getElementById('searchLoader');
         const mainContent =
     document.querySelector('.main-content');
+    
 
         let selectedFincode = null;
+        let currentFincode = null;
 
         async function performSearch() {
 
@@ -112,6 +114,7 @@ let searchTimeout;
     
 
         async function selectCompany(fincode) {
+            currentFincode = fincode;
             selectedFincode = fincode;
             searchResults.classList.remove('visible');
 
@@ -355,3 +358,47 @@ const exampleCompanies =
     });
 
 });
+
+const ollamaChip = document.getElementById('ollamaChip');
+const openaiChip = document.getElementById('openaiChip');
+
+ollamaChip.addEventListener('click', async () => {
+
+    if (!currentFincode) return;
+
+    ollamaChip.classList.add('active');
+    openaiChip.classList.remove('active');
+
+    document.getElementById('aiOverview').textContent =
+        'Loading Ollama analysis...';
+
+    const response = await fetch(
+        `/company/${currentFincode}/ai-summary/`
+    );
+
+    const data = await response.json();
+
+    document.getElementById('aiOverview').textContent =
+        data.summary;
+});
+
+
+openaiChip.addEventListener('click', async () => {
+
+    if (!currentFincode) return;
+
+    openaiChip.classList.add('active');
+    ollamaChip.classList.remove('active');
+
+    document.getElementById('aiOverview').textContent =
+        'Loading OpenAI analysis...';
+
+    const response = await fetch(
+        `/company/${currentFincode}/openai-summary/`
+    );
+
+    const data = await response.json();
+
+    document.getElementById('aiOverview').textContent =
+        data.summary;
+}); 

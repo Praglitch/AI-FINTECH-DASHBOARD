@@ -30,6 +30,7 @@ from stocks.views import (
     company_corporate_actions,
     test_ollama,
     company_ai_summary,
+    company_openai_summary
 )
 
 urlpatterns = [
@@ -100,4 +101,9 @@ urlpatterns = [
 ),
     
     
+path(
+    "company/<int:fincode>/openai-summary/",
+    company_openai_summary,
+),
 ]
+

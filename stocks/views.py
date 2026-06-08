@@ -1,5 +1,7 @@
 import json
 import requests
+import os
+from openai import OpenAI
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -212,7 +214,7 @@ def test_ollama(request):
     
     
  
-#COMPANY AI SUMMARY
+#COMPANY AI SUMMARY - OLLAMA
 @login_required
 def company_ai_summary(request, fincode):
 
@@ -254,4 +256,50 @@ def company_ai_summary(request, fincode):
 
     return JsonResponse({
         "summary": data["response"]
+    })
+    
+    
+#COMPANY AI SUMMARY - OPENAI
+@login_required
+def company_openai_summary(request, fincode):
+
+    company = get_company_details_data(fincode)
+    financials = get_company_financials_data(fincode)
+    shareholding = get_company_shareholding_data(fincode)
+    market = get_company_market_data(fincode)
+
+    prompt = f"""
+    Analyze this company.
+
+    Company: {company}
+    Financials: {financials}
+    Shareholding: {shareholding}
+    Market: {market}
+
+    Give:
+    1. Business Overview
+    2. Strengths
+    3. Risks
+    4. Investor Takeaway
+    """
+
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY")
+    )
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {
+                "role":"user",
+                "content":prompt
+            }
+        ]
+    )
+
+    return JsonResponse({
+        "summary":
+        response.choices[0].message.content
     })

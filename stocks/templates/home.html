@@ -301,9 +301,31 @@
                 <!-- AI Analysis Tab -->
                 <div id="analysisTab" class="tab-content">
                     <div class="panel ai-analysis-section">
-                        <div class="panel-header">
-                            <span class="ai-badge">🤖 AI Analysis</span>
-                        </div>
+                       <div class="panel-header ai-header">
+
+    <span class="ai-badge">🤖 AI Analysis</span>
+
+    <div class="ai-model-switch">
+
+        <button
+            id="ollamaChip"
+            class="ai-chip active"
+            type="button"
+        >
+            Ollama
+        </button>
+
+        <button
+            id="openaiChip"
+            class="ai-chip"
+            type="button"
+        >
+            OpenAI
+        </button>
+
+    </div>
+
+</div>
                         <div class="ai-summary-content">
                             <div class="ai-summary-text" id="aiOverview">Loading AI analysis...</div>
                         </div>

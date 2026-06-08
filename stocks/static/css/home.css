@@ -720,3 +720,36 @@
     pointer-events: none;
     transition: all 0.2s ease;
 }
+
+.ai-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.ai-model-switch{
+    display:flex;
+    gap:12px;
+}
+
+.ai-chip{
+    padding:8px 16px;
+
+    border:none;
+    border-radius:999px;
+
+    background:#1e293b;
+    color:white;
+
+    cursor:pointer;
+
+    transition:all 0.2s ease;
+}
+
+.ai-chip:hover{
+    background:#334155;
+}
+
+.ai-chip.active{
+    background:#7c3aed;
+}
