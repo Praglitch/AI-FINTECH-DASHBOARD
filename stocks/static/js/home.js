@@ -470,27 +470,59 @@ askAIButton.addEventListener(
         const question =
             aiQuestion.value.trim();
 
-        if (!question) {
-            return;
-        }
+        if (!question) return;
 
-        const response = await fetch(
-            `/company/${currentFincode}/chat/`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    question
-                })
+        askAIButton.classList.add("active");
+        askAIButton.disabled = true;
+        askAIButton.textContent = "Thinking...";
+
+        aiAnswer.textContent =
+            "Generating answer...";
+
+        try {
+
+            const response = await fetch(
+                `/company/${currentFincode}/chat/`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question
+                    })
+                }
+            );
+
+            const data =
+                await response.json();
+
+            aiAnswer.textContent =
+                data.answer;
+
+        } finally {
+
+            askAIButton.classList.remove("active");
+            askAIButton.disabled = false;
+            askAIButton.textContent = "Ask AI";
+        }
+    }
+);
+
+document
+    .querySelectorAll(".prompt-btn")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                document.getElementById(
+                    "aiQuestion"
+                ).value =
+                    button.textContent.trim();
+
             }
         );
 
-        const data =
-            await response.json();
-
-        aiAnswer.textContent =
-            data.answer;
-    }
-);
+    });

@@ -20,6 +20,8 @@ from .services.announcement_service import get_company_announcements_data
 from .services.corporate_actions_service import get_company_corporate_actions_data
 from .services.yfinance_services import get_yfinance_data
 from django.views.decorators.csrf import csrf_exempt
+from .services.ai_retrieval_service import build_context
+
 
 #LOGIN PAGE
 def login_page(request):
@@ -324,37 +326,10 @@ def company_chat(request, fincode):
 
     question = body.get("question")
 
-    company = get_company_details_data(fincode)
-
-    financials = get_company_financials_data(fincode)
-
-    market = get_company_market_data(fincode)
-
-    shareholding = get_company_shareholding_data(fincode)
-
-    news = get_company_news_data(fincode)
-
-    yfinance = get_yfinance_data(fincode)
-
-    context = f"""
-    Company:
-    {company}
-
-    Financials:
-    {financials}
-
-    Market:
-    {market}
-
-    Shareholding:
-    {shareholding}
-
-    News:
-    {news}
-
-    Yahoo Finance:
-    {yfinance}
-    """
+    context = build_context(
+    question,
+    fincode
+)
     
     prompt = f"""
     You are a financial analyst.
@@ -376,12 +351,24 @@ def company_chat(request, fincode):
 
     response = client.chat.completions.create(
     model="gpt-4.1-mini",
-    messages=[
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ]
+   messages=[
+    {
+        "role": "system",
+        "content": """
+You are an Indian stock market analyst.
+
+Rules:
+1. Use only the supplied context.
+2. Do not make up information.
+3. If information is unavailable, say so.
+4. Keep answers concise and factual.
+"""
+    },
+    {
+        "role": "user",
+        "content": prompt
+    }
+]
     
 )
     
