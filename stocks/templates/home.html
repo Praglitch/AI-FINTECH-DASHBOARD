@@ -253,22 +253,64 @@
                         </div>
                     </div>
 
-                    <div class="section-divider"></div>
+                   <div class="section-divider"></div>
 
-                    <div class="panel" style="border-style: dashed;">
-                        <div style="text-align: center; color: var(--text-dim); padding: 40px 24px;">
-                            <p style="font-size: 14px; margin-bottom: 8px;">📊 Revenue Trend Chart</p>
-                            <p style="font-size: 12px;">Coming soon - Interactive financial trend visualization</p>
-                        </div>
-                    </div>
+<div class="panel">
 
-                    <div class="panel" style="border-style: dashed; margin-top: 24px;">
-                        <div style="text-align: center; color: var(--text-dim); padding: 40px 24px;">
-                            <p style="font-size: 14px; margin-bottom: 8px;">📈 PAT Trend Chart</p>
-                            <p style="font-size: 12px;">Coming soon - Interactive profit trend visualization</p>
-                        </div>
-                    </div>
-                </div>
+    <div class="panel-header">
+        <span class="panel-title">
+            Market Analysis (Yahoo Finance)
+        </span>
+    </div>
+
+    <div class="financial-summary-grid">
+
+        <div class="financial-item">
+            <div class="financial-label">Current Price</div>
+            <div class="financial-value" id="yfCurrentPrice">-</div>
+        </div>
+
+        <div class="financial-item">
+            <div class="financial-label">PE Ratio</div>
+            <div class="financial-value" id="yfPE">-</div>
+        </div>
+
+        <div class="financial-item">
+            <div class="financial-label">52W High</div>
+            <div class="financial-value" id="yfHigh">-</div>
+        </div>
+
+        <div class="financial-item">
+            <div class="financial-label">52W Low</div>
+            <div class="financial-value" id="yfLow">-</div>
+        </div>
+
+        <div class="financial-item">
+            <div class="financial-label">Market Cap</div>
+            <div class="financial-value" id="yfMarketCap">-</div>
+        </div>
+
+        <div class="financial-item">
+            <div class="financial-label">Volume</div>
+            <div class="financial-value" id="yfVolume">-</div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="section-divider"></div>
+
+                    <div class="panel">
+    <div class="panel-header">
+        <span class="panel-title">Stock Price Trend (6 Months)</span>
+    </div>
+
+    <canvas id="stockPriceChart"></canvas>
+    <canvas id="volumeChart"></canvas>
+</div>
+
+                    
 
                 <!-- News & Updates Tab -->
                 <div id="newsTab" class="tab-content">
@@ -336,5 +378,6 @@
     </div>
 
     <script src="{% static 'js/home.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

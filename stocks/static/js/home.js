@@ -6,6 +6,7 @@
         const searchLoader = document.getElementById('searchLoader');
         const mainContent =
     document.querySelector('.main-content');
+  
     
 
         let selectedFincode = null;
@@ -124,7 +125,7 @@ noResults.classList.add('loading-blur');
 dashboardContent.classList.add('loading-blur');
 
             try {
-                const [company, market, shareholding, ai, financials, announcements, news, actions] = await Promise.all([
+                const [company, market, shareholding, ai, financials, announcements, news, actions, yfinance] = await Promise.all([
                     fetch(`/company/${fincode}/`).then(r => r.json()),
                     fetch(`/company-market/${fincode}/`).then(r => r.json()),
                     fetch(`/company-shareholding/${fincode}/`).then(r => r.json()),
@@ -132,10 +133,11 @@ dashboardContent.classList.add('loading-blur');
                     fetch(`/company/${fincode}/financials/`).then(r => r.json()),
                     fetch(`/company/${fincode}/announcements/`).then(r => r.json()),
                     fetch(`/company/${fincode}/news/`).then(r => r.json()),
-                    fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json())
+                    fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()),
+                    fetch(`/company/${fincode}/yfinance/`).then(r => r.json())
                 ]);
 console.log("BEFORE UPDATE");
-                updateDashboard(company, market, shareholding, ai, financials, announcements, news, actions);
+                updateDashboard(company, market, shareholding, ai, financials, announcements, news, actions, yfinance);
 
                 noResults.style.display = 'none';
                 dashboardContent.classList.add('active');
@@ -163,7 +165,7 @@ if (searchInput.value.trim()) {
 }
         }
 
-        function updateDashboard(company, market, shareholding, ai, financials, announcements, news, actions) {
+        function updateDashboard(company, market, shareholding, ai, financials, announcements, news, actions, yfinance) {
             // Hero section
             document.getElementById('companyName').textContent = company.compname;
             document.getElementById('companySymbol').textContent = company.symbol || 'N/A';
@@ -206,6 +208,22 @@ if (searchInput.value.trim()) {
             document.getElementById('finPAT').textContent = '₹ ' + financials.profit_after_tax;
             document.getElementById('finEPS').textContent = financials.reported_eps;
             document.getElementById('finDividend').textContent = financials.dividend_perc + '%';
+
+            // YFinance Market Analysis
+
+            document.getElementById('yfCurrentPrice').textContent = yfinance.current_price ?? '-';
+            document.getElementById('yfPE').textContent = yfinance.pe_ratio ?? '-';
+            document.getElementById('yfHigh').textContent = yfinance.fifty_two_week_high ?? '-';
+            document.getElementById('yfLow').textContent = yfinance.fifty_two_week_low ?? '-';              
+            document.getElementById('yfMarketCap').textContent = formatNumber(yfinance.market_cap);
+            document.getElementById('yfVolume').textContent = formatNumber(yfinance.volume);
+
+            const prices = yfinance.chart_data.map(x => x.close);
+const volumes = yfinance.chart_data.map(x => x.volume);
+const labels = yfinance.chart_data.map(x => x.date);
+
+            renderStockChart(yfinance.chart_data);
+
 
             // News
             updateNewsList(news);
@@ -402,3 +420,42 @@ openaiChip.addEventListener('click', async () => {
     document.getElementById('aiOverview').textContent =
         data.summary;
 }); 
+
+let stockChart = null;
+
+function renderStockChart(chartData) {
+
+    const ctx =
+        document.getElementById('stockPriceChart');
+
+    if (!ctx) return;
+
+    if (stockChart) {
+        stockChart.destroy();
+    }
+
+    stockChart = new Chart(ctx, {
+
+        type: 'line',
+
+        data: {
+            labels: chartData.map(
+                item => item.date
+            ),
+
+            datasets: [
+                {
+                    label: 'Stock Price',
+
+                    data: chartData.map(
+                        item => item.close
+                    ),
+
+                    borderColor: '#7c3aed',
+                    borderWidth: 2,
+                    tension: 0.3
+                }
+            ]
+        }
+    });
+}

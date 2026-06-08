@@ -16,6 +16,7 @@ from .services.market_service import get_company_market_data
 from .services.shareholding_service import get_company_shareholding_data
 from .services.announcement_service import get_company_announcements_data
 from .services.corporate_actions_service import get_company_corporate_actions_data
+from .services.yfinance_services import get_yfinance_data
 
 
 #LOGIN PAGE
@@ -303,3 +304,10 @@ def company_openai_summary(request, fincode):
         "summary":
         response.choices[0].message.content
     })
+    
+@login_required
+def company_yfinance(request, fincode):
+
+    data = get_yfinance_data(fincode)
+
+    return JsonResponse(data)
