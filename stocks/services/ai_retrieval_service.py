@@ -9,6 +9,7 @@ from .yfinance_services import get_yfinance_data
 from .board_service import get_board_of_directors_data
 from .insider_service import get_insider_trading_data
 from .bulk_deals_service import get_bulk_deals_data
+from .block_deals_service import get_block_deals_data
 
 def build_context(question, fincode):
 
@@ -118,6 +119,23 @@ def build_context(question, fincode):
                 f"Bulk Deals: {bulk_deals}"
             )
 
+
+    # Block Deal questions
+    if any(word in question for word in [
+        "block deal",
+        "block deals",
+        "institutional transaction",
+        "large institutional trade"
+    ]):
+
+        block_deals = get_block_deals_data(fincode)
+
+        if block_deals:
+            context.append(
+                f"Block Deals: {block_deals}"
+            )
+            
+            
     return "\n\n".join(context)
 
 
