@@ -15,7 +15,9 @@ class Stock(models.Model):
 # PDF Cache
 class AnnouncementPdfCache(models.Model):
     newsid = models.CharField(max_length=100, unique=True)
-    fincode = models.IntegerField()
+
+    scripcode = models.CharField(max_length=50)
+
     attachment_url = models.TextField()
 
     pdf_text = models.TextField()
@@ -26,7 +28,7 @@ class AnnouncementPdfCache(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.fincode} - {self.newsid}"
+        return f"{self.scripcode} - {self.newsid}"
 
 
 # PDF Chunks
