@@ -25,7 +25,7 @@ def get_announcement_pdf_chunks(
 ):
     results = search_chunks(
         scripcode=fincode,
-        keyword="SEBI",
+        keyword = "SEBI",
         limit=5,
     )
 
