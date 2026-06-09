@@ -1,219 +1,59 @@
-from multiprocessing import context
 
-from .financial_service import get_company_financials_data
-from .shareholding_service import get_company_shareholding_data
-from .market_service import get_company_market_data
-from .news_service import get_company_news_data
-from .announcement_service import get_company_announcements_data
-from .corporate_actions_service import get_company_corporate_actions_data
-from .company_service import get_company_details_data
-from .yfinance_services import get_yfinance_data
-from .board_service import get_board_of_directors_data
-from .insider_service import get_insider_trading_data
-from .bulk_deals_service import get_bulk_deals_data
-from .block_deals_service import get_block_deals_data
+"""
+Builds a context string for AI questions using intent-based retrieval.
+"""
+
 from .intent_service import detect_intent
+from .retrieval_registry import INTENT_SOURCES, fetch_sources
+
 
 def build_context(question, fincode):
+    """
+    Returns a plain-text context string containing all relevant data
+    for the given question and company.
+    """
 
-    question = question.lower()
-    
-    intent = detect_intent(question)
-    
-    context = []
-    
-    # Analysis Intent
-    if intent == "analysis":
+    question_lower = question.lower()
 
-        financials = get_company_financials_data(fincode)
+    # Detect intent
+    intent = detect_intent(question_lower)
 
-        if financials:
-            context.append(
-                f"Financials: {financials}"
-            )
+    print(f"INTENT: {intent}")
 
-        shareholding = get_company_shareholding_data(fincode)
+    # Get sources for intent
+    source_keys = INTENT_SOURCES.get(
+        intent,
+        INTENT_SOURCES.get("analysis", [])
+    )
 
-        if shareholding:
-            context.append(
-                f"Shareholding: {shareholding}"
-            )
+    print(f"SOURCES TO FETCH: {source_keys}")
 
-        market = get_company_market_data(fincode)
+    # Fetch data
+    fetched = fetch_sources(
+        fincode,
+        source_keys
+    )
 
-        if market:
-            context.append(
-                f"Market: {market}"
-            )
+    # Build context
+    context_parts = []
 
-        news = get_company_news_data(fincode)
+    for source_name, data in fetched:
 
-        if news:
-            context.append(
-                f"News: {news}"
-            )
+        label = source_name.replace(
+            "_",
+            " "
+        ).title()
 
-        announcements = get_company_announcements_data(fincode)
+        context_parts.append(
+            f"{label}: {data}"
+        )
 
-        if announcements:
-            context.append(
-                f"Announcements: {announcements}"
-            )
+    print(
+        f"CONTEXT LENGTH: {len(context_parts)}"
+    )
 
-        actions = get_company_corporate_actions_data(fincode)
+    for part in context_parts[:3]:
+        print(part[:100])
 
-        if actions:
-            context.append(
-                f"Corporate Actions: {actions}"
-            )
-
-        insider = get_insider_trading_data(fincode)
-
-        if insider:
-            context.append(
-                f"Insider Trading: {insider}"
-            )
-
-        bulk_deals = get_bulk_deals_data(fincode)
-
-        if bulk_deals:
-            context.append(
-                f"Bulk Deals: {bulk_deals}"
-            )
-
-        block_deals = get_block_deals_data(fincode)
-
-        if block_deals:
-            context.append(
-                f"Block Deals: {block_deals}"
-            )
-    print("INTENT:", intent)
-    print("CONTEXT LENGTH:", len(context))
-
-
-
-    company = get_company_details_data(fincode)
-
-    if company:
-        context.append(f"Company: {company}")
-
-    # Financial questions
-    if any(word in question for word in [
-        "profit", "revenue", "sales", "eps",
-        "income", "financial"
-    ]):
-        financials = get_company_financials_data(fincode)
-
-        if financials:
-            context.append(f"Financials: {financials}")
-
-    # Shareholding questions
-    if any(word in question for word in [
-        "promoter", "shareholding", "fii",
-        "fpi", "mutual fund"
-    ]):
-        shareholding = get_company_shareholding_data(fincode)
-
-        if shareholding:
-            context.append(f"Shareholding: {shareholding}")
-
-    # Market questions
-    if any(word in question for word in [
-        "price", "market cap", "pe",
-        "52 week", "stock"
-    ]):
-        market = get_company_market_data(fincode)
-
-        if market:
-            context.append(f"Market: {market}")
-
-    # News/Event questions
-    if any(word in question for word in [
-        "news", "announcement",
-        "recent", "latest", "event"
-    ]):
-        news = get_company_news_data(fincode)
-        announcements = get_company_announcements_data(fincode)
-        actions = get_company_corporate_actions_data(fincode)
-
-        context.append(f"News: {news}")
-        context.append(f"Announcements: {announcements}")
-        context.append(f"Corporate Actions: {actions}")
-        
-        # Board / Governance questions
-    if any(word in question for word in [
-        "director",
-        "directors",
-        "board",
-        "chairman",
-        "management",
-        "ceo"
-    ]):
-
-        board = get_board_of_directors_data(fincode)
-
-        if board:
-            context.append(
-                f"Board Of Directors: {board}"
-            )
-            
-            
-            # Insider Trading questions
-    if any(word in question for word in [
-        "insider",
-        "insider trading",
-        "buying",
-        "selling",
-        "purchase",
-        "sale",
-        "esop"
-    ]):
-
-        insider = get_insider_trading_data(fincode)
-
-        if insider:
-            context.append(
-                f"Insider Trading: {insider}"
-            )
-            
-            
-            # Bulk Deal questions
-    if any(word in question for word in [
-        "bulk deal",
-        "bulk deals",
-        "large purchase",
-        "large sale",
-        "institutional buying",
-        "institutional selling"
-    ]):
-
-        bulk_deals = get_bulk_deals_data(fincode)
-
-        if bulk_deals:
-            context.append(
-                f"Bulk Deals: {bulk_deals}"
-            )
-
-
-    # Block Deal questions
-    if any(word in question for word in [
-        "block deal",
-        "block deals",
-        "institutional transaction",
-        "large institutional trade"
-    ]):
-
-        block_deals = get_block_deals_data(fincode)
-
-        if block_deals:
-            context.append(
-                f"Block Deals: {block_deals}"
-            )
-            
-    print("CONTEXT ITEMS:")
-    for item in context:
-        print(item[:100])
-    return "\n\n".join(context)
-
-
+    return "\n\n".join(context_parts)
 

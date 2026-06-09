@@ -1,0 +1,111 @@
+
+"""
+Registry for AI retrieval: maps intents to data sources and provides handlers.
+"""
+
+from .financial_service import get_company_financials_data
+from .shareholding_service import get_company_shareholding_data
+from .market_service import get_company_market_data
+from .news_service import get_company_news_data
+from .announcement_service import get_company_announcements_data
+from .corporate_actions_service import get_company_corporate_actions_data
+from .company_service import get_company_details_data
+from .board_service import get_board_of_directors_data
+from .insider_service import get_insider_trading_data
+from .bulk_deals_service import get_bulk_deals_data
+from .block_deals_service import get_block_deals_data
+
+
+# ----------------------------------------------------------------------
+# SOURCE HANDLERS
+# ----------------------------------------------------------------------
+SOURCE_HANDLERS = {
+    "company": get_company_details_data,
+    "financials": get_company_financials_data,
+    "shareholding": get_company_shareholding_data,
+    "market": get_company_market_data,
+    "news": get_company_news_data,
+    "announcements": get_company_announcements_data,
+    "corporate_actions": get_company_corporate_actions_data,
+    "board": get_board_of_directors_data,
+    "insider": get_insider_trading_data,
+    "bulk_deals": get_bulk_deals_data,
+    "block_deals": get_block_deals_data,
+}
+
+
+# ----------------------------------------------------------------------
+# INTENT → SOURCES MAPPING
+# ----------------------------------------------------------------------
+INTENT_SOURCES = {
+
+    "analysis": [
+        "company",
+        "financials",
+        "shareholding",
+        "market",
+        "news",
+        "announcements",
+        "corporate_actions",
+        "insider",
+        "bulk_deals",
+        "block_deals",
+    ],
+
+    "governance": [
+        "board",
+    ],
+
+    "ownership": [
+        "shareholding",
+        "insider",
+        "bulk_deals",
+        "block_deals",
+    ],
+
+    "market": [
+        "market",
+        "financials",
+    ],
+
+    "corporate": [
+        "news",
+        "announcements",
+        "corporate_actions",
+    ],
+
+    "deals": [
+        "insider",
+        "bulk_deals",
+        "block_deals",
+    ],
+}
+
+
+# ----------------------------------------------------------------------
+# FETCH SOURCES
+# ----------------------------------------------------------------------
+def fetch_sources(fincode, source_keys):
+    """
+    Returns a list of (source_name, data)
+    preserving source order.
+    """
+
+    results = []
+
+    for key in source_keys:
+
+        handler = SOURCE_HANDLERS.get(key)
+
+        if handler:
+
+            data = handler(fincode)
+
+            if data:
+
+                results.append(
+                    (key, data)
+                )
+
+    return results
+

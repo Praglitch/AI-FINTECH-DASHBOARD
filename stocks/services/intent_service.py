@@ -1,53 +1,164 @@
+
 def detect_intent(question):
+    """
+    Returns one of:
+    - analysis
+    - governance
+    - ownership
+    - market
+    - corporate
+    - deals
+    """
 
-    question = question.lower()
+    q = question.lower()
 
-    if any(word in question for word in [
-        "director",
-        "board",
-        "chairman",
-        "management",
-        "ceo"
-    ]):
-        return "governance"
-
-    if any(word in question for word in [
-        "promoter",
-        "shareholding",
-        "fii",
-        "fpi",
-        "mutual fund"
-    ]):
-        return "ownership"
-
-    if any(word in question for word in [
+    # --------------------------------------------------
+    # DEALS
+    # --------------------------------------------------
+    deals_keywords = [
         "insider",
+        "insider trading",
         "esop",
-        "buying",
-        "selling"
-    ]):
-        return "insider"
-
-    if any(word in question for word in [
         "bulk deal",
-        "block deal"
-    ]):
+        "bulk deals",
+        "block deal",
+        "block deals",
+        "large trade",
+        "institutional deal",
+    ]
+
+    if any(word in q for word in deals_keywords):
         return "deals"
 
-    if any(word in question for word in [
+    # --------------------------------------------------
+    # GOVERNANCE
+    # --------------------------------------------------
+    governance_keywords = [
+        "director",
+        "directors",
+        "board",
+        "board of directors",
+        "chairman",
+        "chairperson",
+        "management",
+        "ceo",
+        "chief executive",
+        "executive",
+        "independent director",
+        "md",
+        "managing director",
+    ]
+
+    if any(word in q for word in governance_keywords):
+        return "governance"
+
+    # --------------------------------------------------
+    # OWNERSHIP
+    # --------------------------------------------------
+    ownership_keywords = [
+        "promoter",
+        "promoters",
+        "shareholding",
+        "holding pattern",
+        "fii",
+        "fpi",
+        "mutual fund",
+        "mutual funds",
+        "mf",
+        "institutional holding",
+        "retail holding",
+        "public holding",
+        "ownership",
+    ]
+
+    if any(word in q for word in ownership_keywords):
+        return "ownership"
+
+    # --------------------------------------------------
+    # CORPORATE
+    # --------------------------------------------------
+    corporate_keywords = [
         "news",
         "announcement",
+        "announcements",
         "corporate action",
-        "latest"
-    ]):
+        "corporate actions",
+        "dividend",
+        "bonus",
+        "stock split",
+        "split",
+        "rights issue",
+        "buyback",
+        "latest",
+        "recent",
+        "update",
+        "event",
+        "filing",
+        "bse filing",
+    ]
+
+    if any(word in q for word in corporate_keywords):
         return "corporate"
 
-    if any(word in question for word in [
+    # --------------------------------------------------
+    # MARKET
+    # --------------------------------------------------
+    market_keywords = [
         "price",
-        "market cap",
+        "stock price",
+        "share price",
+        "market price",
         "pe",
-        "stock"
-    ]):
+        "p/e",
+        "pe ratio",
+        "market cap",
+        "market capitalization",
+        "52 week",
+        "52-week",
+        "all time high",
+        "ath",
+        "performance",
+        "return",
+        "rally",
+        "fall",
+        "volume",
+        "turnover",
+    ]
+
+    if any(word in q for word in market_keywords):
         return "market"
 
+    # --------------------------------------------------
+    # ANALYSIS
+    # --------------------------------------------------
+    analysis_keywords = [
+        "analyze",
+        "analysis",
+        "invest",
+        "investment",
+        "buy",
+        "sell",
+        "hold",
+        "good company",
+        "good stock",
+        "worth buying",
+        "risk",
+        "risks",
+        "positive",
+        "positives",
+        "negative",
+        "negatives",
+        "outlook",
+        "future",
+        "long term",
+        "short term",
+        "investment thesis",
+    ]
+
+    if any(word in q for word in analysis_keywords):
+        return "analysis"
+
+    # --------------------------------------------------
+    # DEFAULT
+    # --------------------------------------------------
     return "analysis"
