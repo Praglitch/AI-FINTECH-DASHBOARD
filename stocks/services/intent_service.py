@@ -29,6 +29,25 @@ def detect_intent(question):
 
     if any(word in q for word in deals_keywords):
         return "deals"
+    
+    
+    # --------------------------------------------------
+    # BOARD MEETING / RESULTS / FILINGS
+    # --------------------------------------------------
+
+    meeting_keywords = [
+        "board meeting",
+        "outcome",
+        "meeting outcome",
+        "financial results",
+        "quarterly results",
+        "results",
+        "sebi",
+        "filing",
+    ]
+
+    if any(word in q for word in meeting_keywords):
+        return "corporate"
 
     # --------------------------------------------------
     # GOVERNANCE
@@ -95,6 +114,15 @@ def detect_intent(question):
         "event",
         "filing",
         "bse filing",
+        "board meeting",
+        "outcome",
+        "results",
+        "financial results",
+        "quarterly results",
+        "meeting outcome",
+        "sebi",
+        "regulation",
+        "filing",
     ]
 
     if any(word in q for word in corporate_keywords):

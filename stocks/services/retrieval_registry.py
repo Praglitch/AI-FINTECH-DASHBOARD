@@ -1,4 +1,4 @@
-        
+
 """
 Registry for AI retrieval: maps intents to data sources and provides handlers.
 """
@@ -14,11 +14,33 @@ from .board_service import get_board_of_directors_data
 from .insider_service import get_insider_trading_data
 from .bulk_deals_service import get_bulk_deals_data
 from .block_deals_service import get_block_deals_data
+from .chunk_retrieval_service import search_chunks
 
 
-# ----------------------------------------------------------------------
+
+
+def get_announcement_pdf_chunks(
+    fincode,
+    question=None
+):
+    results = search_chunks(
+        scripcode=fincode,
+        keyword="SEBI",
+        limit=5,
+    )
+
+    if not results:
+        return ""
+
+    return "\n\n".join(
+        chunk.chunk_text
+        for chunk in results
+    )
+    
+    
+
 # SOURCE HANDLERS
-# ----------------------------------------------------------------------
+
 SOURCE_HANDLERS = {
     "company": get_company_details_data,
     "financials": get_company_financials_data,
@@ -31,6 +53,7 @@ SOURCE_HANDLERS = {
     "insider": get_insider_trading_data,
     "bulk_deals": get_bulk_deals_data,
     "block_deals": get_block_deals_data,
+    "announcement_pdf_chunks": get_announcement_pdf_chunks,
 }
 
 
@@ -71,6 +94,7 @@ INTENT_SOURCES = {
     "corporate": [
         "news",
         "announcements",
+        "announcement_pdf_chunks",
         "corporate_actions",
     ],
 
@@ -82,10 +106,14 @@ INTENT_SOURCES = {
 }
 
 
-# ----------------------------------------------------------------------
+
 # FETCH SOURCES
-# ----------------------------------------------------------------------
-def fetch_sources(fincode, source_keys):
+
+def fetch_sources(
+    fincode,
+    source_keys,
+    question=None
+):
     """
     Returns a list of (source_name, data)
     preserving source order.
@@ -99,7 +127,15 @@ def fetch_sources(fincode, source_keys):
 
         if handler:
 
-            data = handler(fincode)
+            if key == "announcement_pdf_chunks":
+                data = handler(
+                    fincode,
+                    question
+                )
+            else:
+                data = handler(
+                    fincode
+                )
 
             if data:
 

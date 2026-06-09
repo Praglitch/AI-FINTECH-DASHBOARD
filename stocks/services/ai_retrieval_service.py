@@ -30,9 +30,10 @@ def build_context(question, fincode):
 
     # Fetch data
     fetched = fetch_sources(
-        fincode,
-        source_keys
-    )
+    fincode,
+    source_keys,
+    question
+)
 
     # Build context
     context_parts = []
