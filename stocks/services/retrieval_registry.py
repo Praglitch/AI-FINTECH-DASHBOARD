@@ -1,4 +1,4 @@
-
+        
 """
 Registry for AI retrieval: maps intents to data sources and provides handlers.
 """
