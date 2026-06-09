@@ -6,7 +6,9 @@ from .announcement_service import get_company_announcements_data
 from .corporate_actions_service import get_company_corporate_actions_data
 from .company_service import get_company_details_data
 from .yfinance_services import get_yfinance_data
-
+from .board_service import get_board_of_directors_data
+from .insider_service import get_insider_trading_data
+from .bulk_deals_service import get_bulk_deals_data
 
 def build_context(question, fincode):
 
@@ -61,5 +63,62 @@ def build_context(question, fincode):
         context.append(f"News: {news}")
         context.append(f"Announcements: {announcements}")
         context.append(f"Corporate Actions: {actions}")
+        
+        # Board / Governance questions
+    if any(word in question for word in [
+        "director",
+        "directors",
+        "board",
+        "chairman",
+        "management",
+        "ceo"
+    ]):
+
+        board = get_board_of_directors_data(fincode)
+
+        if board:
+            context.append(
+                f"Board Of Directors: {board}"
+            )
+            
+            
+            # Insider Trading questions
+    if any(word in question for word in [
+        "insider",
+        "insider trading",
+        "buying",
+        "selling",
+        "purchase",
+        "sale",
+        "esop"
+    ]):
+
+        insider = get_insider_trading_data(fincode)
+
+        if insider:
+            context.append(
+                f"Insider Trading: {insider}"
+            )
+            
+            
+            # Bulk Deal questions
+    if any(word in question for word in [
+        "bulk deal",
+        "bulk deals",
+        "large purchase",
+        "large sale",
+        "institutional buying",
+        "institutional selling"
+    ]):
+
+        bulk_deals = get_bulk_deals_data(fincode)
+
+        if bulk_deals:
+            context.append(
+                f"Bulk Deals: {bulk_deals}"
+            )
 
     return "\n\n".join(context)
+
+
+
