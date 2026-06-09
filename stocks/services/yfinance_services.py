@@ -29,7 +29,6 @@ def get_yfinance_data(fincode):
     info.get("averageAnalystRating")
     info.get("regularMarketChangePercent")
 
-    print("INFO:", info)
     
     chart_data = []
     

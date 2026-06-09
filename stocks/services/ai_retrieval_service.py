@@ -1,3 +1,5 @@
+from multiprocessing import context
+
 from .financial_service import get_company_financials_data
 from .shareholding_service import get_company_shareholding_data
 from .market_service import get_company_market_data
@@ -10,12 +12,85 @@ from .board_service import get_board_of_directors_data
 from .insider_service import get_insider_trading_data
 from .bulk_deals_service import get_bulk_deals_data
 from .block_deals_service import get_block_deals_data
+from .intent_service import detect_intent
 
 def build_context(question, fincode):
 
     question = question.lower()
-
+    
+    intent = detect_intent(question)
+    
     context = []
+    
+    # Analysis Intent
+    if intent == "analysis":
+
+        financials = get_company_financials_data(fincode)
+
+        if financials:
+            context.append(
+                f"Financials: {financials}"
+            )
+
+        shareholding = get_company_shareholding_data(fincode)
+
+        if shareholding:
+            context.append(
+                f"Shareholding: {shareholding}"
+            )
+
+        market = get_company_market_data(fincode)
+
+        if market:
+            context.append(
+                f"Market: {market}"
+            )
+
+        news = get_company_news_data(fincode)
+
+        if news:
+            context.append(
+                f"News: {news}"
+            )
+
+        announcements = get_company_announcements_data(fincode)
+
+        if announcements:
+            context.append(
+                f"Announcements: {announcements}"
+            )
+
+        actions = get_company_corporate_actions_data(fincode)
+
+        if actions:
+            context.append(
+                f"Corporate Actions: {actions}"
+            )
+
+        insider = get_insider_trading_data(fincode)
+
+        if insider:
+            context.append(
+                f"Insider Trading: {insider}"
+            )
+
+        bulk_deals = get_bulk_deals_data(fincode)
+
+        if bulk_deals:
+            context.append(
+                f"Bulk Deals: {bulk_deals}"
+            )
+
+        block_deals = get_block_deals_data(fincode)
+
+        if block_deals:
+            context.append(
+                f"Block Deals: {block_deals}"
+            )
+    print("INTENT:", intent)
+    print("CONTEXT LENGTH:", len(context))
+
+
 
     company = get_company_details_data(fincode)
 
@@ -135,7 +210,9 @@ def build_context(question, fincode):
                 f"Block Deals: {block_deals}"
             )
             
-            
+    print("CONTEXT ITEMS:")
+    for item in context:
+        print(item[:100])
     return "\n\n".join(context)
 
 
