@@ -312,93 +312,73 @@ def company_openai_summary(request, fincode):
     
    
    
-# RAG COMPANY CHAT   
 @login_required
 @csrf_exempt
 def company_chat(request, fincode):
-    
     if request.method != "POST":
-        return JsonResponse({
-            "error": "POST request required"
-        }, status=405)
+        return JsonResponse({"error": "POST request required"}, status=405)
 
     body = json.loads(request.body)
     question = body.get("question")
+    history = body.get("history", [])
 
     context = build_context(question, fincode)
-    
-    # User prompt – asks for markdown formatting
+
+    history_text = ""
+    for msg in history[-4:]:
+        role = "User" if msg["role"] == "user" else "Assistant"
+        history_text += f"{role}: {msg['content']}\n"
+
     prompt = f"""
+Previous conversation:
+{history_text if history_text else "(No previous conversation)"}
+
+Current USER QUESTION:
+{question}
+
 CONTEXT (financials, market, shareholding, news, announcements, PDFs):
 {context}
 
-USER QUESTION:
-{question}
-
 INSTRUCTIONS:
+- If the current question is a follow‑up, answer concisely using context and history.
 - Answer using **markdown** for readability.
-- Use `**bold**` for numbers and key metrics.
+- Use `**bold**` for numbers.
 - Use bullet points (`-`) for lists.
 - Use headings (`###`) for sections like "Financial Health", "Valuation", "Strengths & Risks", "Verdict".
-- Keep it clean and scannable.
 """
-    
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {
                 "role": "system",
                 "content": """
-You are an Indian stock market analyst helping retail investors.
+You are an Indian stock market analyst.
 
-## Output Format (IMPORTANT):
-Use **markdown** for readability:
-- Use `**bold**` for numbers and key metrics.
-- Use bullet points (`-`) for lists.
-- Use headings (`###`) for sections like "Financial Health", "Valuation", "Strengths & Risks", "Verdict".
-- Use line breaks between sections.
+## Output Format:
+- Use **markdown**: bold, bullet points, headings (`###`).
+- Structure investment answers with sections: Financial Health, Valuation, Strengths & Risks, Verdict.
 
 ## Rules:
-### Factual questions:
 - Use only the provided context.
-- Cite exact numbers in **bold**.
-
-### Investment / analytical questions:
-- Base answer on context.
-- Structure answer with these sections (if data available):
-  ### Financial Health
-  ### Valuation
-  ### Strengths & Risks
-  ### Verdict
-- If data missing, say so but still give balanced view.
-- Include a disclaimer.
-
-### Tone:
-Concise, educational, helpful.
+- Cite numbers in **bold**.
+- For investment questions, give a balanced view with a disclaimer.
+- For follow‑ups, be concise.
 """
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            {"role": "user", "content": prompt}
         ],
         temperature=0.3
     )
-
-    return JsonResponse({
-        "answer": response.choices[0].message.content
-    })
+    return JsonResponse({"answer": response.choices[0].message.content})
     
     
     
     
-#YAHOO FINANCE DATA
 @login_required
 def company_yfinance(request, fincode):
-
-    data = get_yfinance_data(fincode)
-
+    period = request.GET.get("period", "1y")
+    interval = request.GET.get("interval", "1mo")
+    data = get_yfinance_data(fincode, period, interval)
     return JsonResponse(data)
-

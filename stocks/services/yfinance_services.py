@@ -1,45 +1,30 @@
 import yfinance as yf
 from .company_service import get_company_details_data
-import yfinance as yf
 
-from .company_service import get_company_details_data
-
-
-def get_yfinance_data(fincode):
-
+def get_yfinance_data(fincode, period="1y", interval="1mo"):
     company = get_company_details_data(fincode)
-
-    print("COMPANY:", company)
-
     if not company:
         return None
-
     symbol = company["symbol"]
-
-    print("SYMBOL:", symbol)
-
     ticker = f"{symbol}.NS"
-
-    print("TICKER:", ticker)
-
     stock = yf.Ticker(ticker)
-
     info = stock.info
-    history = stock.history(period="6mo")
-    info.get("recommendationKey")
-    info.get("averageAnalystRating")
-    info.get("regularMarketChangePercent")
+    history = stock.history(period=period, interval=interval)
 
-    
     chart_data = []
-    
     for index, row in history.iterrows():
-
-            chart_data.append({
-                "date": str(index.date()),
-                "close": round(row["Close"], 2),
-                "volume": int(row["Volume"])
-            })
+        if interval in ['1m','2m','5m','15m','30m','60m','90m','1h']:
+            date_str = index.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            date_str = str(index.date())
+        chart_data.append({
+            "date": date_str,
+            "open": round(row["Open"], 2),
+            "high": round(row["High"], 2),
+            "low": round(row["Low"], 2),
+            "close": round(row["Close"], 2),
+            "volume": int(row["Volume"])
+        })
 
     return {
         "ticker": ticker,
@@ -50,6 +35,6 @@ def get_yfinance_data(fincode):
         "fifty_two_week_low": info.get("fiftyTwoWeekLow"),
         "volume": info.get("volume"),
         "chart_data": chart_data,
-        
-}
-    
+        "period": period,
+        "interval": interval
+    }
