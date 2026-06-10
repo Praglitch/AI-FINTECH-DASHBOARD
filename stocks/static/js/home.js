@@ -119,6 +119,7 @@ let searchTimeout;
         async function selectCompany(fincode) {
             currentFincode = fincode;
             selectedFincode = fincode;
+            resetAITab();
             searchResults.classList.remove('visible');
 
 searchLoader.style.display = 'block';
@@ -302,6 +303,25 @@ const labels = yfinance.chart_data.map(x => x.date);
             if (number >= 1e5) return (number / 1e5).toFixed(2) + 'L';
             return number.toLocaleString('en-IN');
         }
+
+
+        function resetAITab() {
+    const aiOverview = document.getElementById('aiOverview');
+    if (aiOverview) aiOverview.textContent = 'Loading AI analysis...';
+    
+    const aiQuestion = document.getElementById('aiQuestion');
+    if (aiQuestion) aiQuestion.value = '';
+    
+    const aiAnswerDiv = document.getElementById('aiAnswer');
+    if (aiAnswerDiv) aiAnswerDiv.textContent = '';
+    
+    const ollamaChip = document.getElementById('ollamaChip');
+    const openaiChip = document.getElementById('openaiChip');
+    if (ollamaChip && openaiChip) {
+        ollamaChip.classList.add('active');
+        openaiChip.classList.remove('active');
+    }
+}
 
         // Tab System
         document.querySelectorAll('.tab-button').forEach(button => {

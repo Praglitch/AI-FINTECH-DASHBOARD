@@ -296,7 +296,7 @@ def company_openai_summary(request, fincode):
     )
 
     response = client.chat.completions.create(
-        model="gpt-4.1-mini",
+        model="gpt-4o-mini",   # Correct model name
         messages=[
             {
                 "role":"user",

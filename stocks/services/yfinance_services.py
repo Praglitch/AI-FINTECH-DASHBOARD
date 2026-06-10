@@ -1,4 +1,5 @@
-from distro import info
+import yfinance as yf
+from .company_service import get_company_details_data
 import yfinance as yf
 
 from .company_service import get_company_details_data
