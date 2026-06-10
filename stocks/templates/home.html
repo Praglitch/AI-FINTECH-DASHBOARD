@@ -11,73 +11,31 @@
 <body>
 
     <div id="errorToast" class="error-toast">
-    Something went wrong
-</div>
+        Something went wrong
+    </div>
 
     <div class="app-container">
         <header class="header-sticky">
-    <div class="search-wrapper ">
-
-        <input
-            type="text"
-            id="companySearch"
-            class="search-input"
-            placeholder="Search company, symbol, or fincode..."
-            autocomplete="off"
-            autofocus
-        >
-            <div id="searchLoader" class="search-loader"></div>
-
-        <button
-            id="clearSearch"
-            class="clear-search"
-        >
-            ✕
-        </button>
-
-    </div>
-
-    <div id="searchResults" class="search-results"></div>
-
+            <div class="search-wrapper">
+                <input type="text" id="companySearch" class="search-input" placeholder="Search company, symbol, or fincode..." autocomplete="off" autofocus>
+                <div id="searchLoader" class="search-loader"></div>
+                <button id="clearSearch" class="clear-search">✕</button>
+            </div>
+            <div id="searchResults" class="search-results"></div>
         </header>
 
         <main class="main-content">
-            
             <div id="noResults" class="empty-state">
-
-    
-
-    <div class="empty-state-icon">🔍</div>
-
-    <h2>Search for a Company</h2>
-
-    <p>
-        Get detailed insights including financials,
-        market performance, shareholding patterns,
-        announcements, news and AI analysis.
-    </p>
-
-    <div class="empty-state-examples">
-
-    <div class="example-company">
-        Reliance Industries
-    </div>
-
-    <div class="example-company">
-        Birla
-    </div>
-
-    <div class="example-company">
-        Infosys
-    </div>
-
-    <div class="example-company">
-        HDFC Bank
-    </div>
-
-</div>
-
-</div>
+                <div class="empty-state-icon">🔍</div>
+                <h2>Search for a Company</h2>
+                <p>Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
+                <div class="empty-state-examples">
+                    <div class="example-company">Reliance Industries</div>
+                    <div class="example-company">Birla</div>
+                    <div class="example-company">Infosys</div>
+                    <div class="example-company">HDFC Bank</div>
+                </div>
+            </div>
 
             <div id="dashboardContent" class="content-wrapper">
                 <!-- Hero Section -->
@@ -92,33 +50,15 @@
                             </div>
                         </div>
                     </div>
-                
+
                     <!-- KPI Cards -->
                     <div class="kpi-grid">
-                        <div class="kpi-card">
-                            <div class="kpi-label">Revenue</div>
-                            <div class="kpi-value" id="kpiRevenue">-</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-label">PAT</div>
-                            <div class="kpi-value" id="kpiPAT">-</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-label">Promoter</div>
-                            <div class="kpi-value" id="kpiPromoter">-</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-label">Public</div>
-                            <div class="kpi-value" id="kpiPublic">-</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-label">Mutual Fund</div>
-                            <div class="kpi-value" id="kpiMutualFund">-</div>
-                        </div>
-                        <div class="kpi-card">
-                            <div class="kpi-label">FII/FPI</div>
-                            <div class="kpi-value" id="kpiFII">-</div>
-                        </div>
+                        <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value" id="kpiRevenue">-</div></div>
+                        <div class="kpi-card"><div class="kpi-label">PAT</div><div class="kpi-value" id="kpiPAT">-</div></div>
+                        <div class="kpi-card"><div class="kpi-label">Promoter</div><div class="kpi-value" id="kpiPromoter">-</div></div>
+                        <div class="kpi-card"><div class="kpi-label">Public</div><div class="kpi-value" id="kpiPublic">-</div></div>
+                        <div class="kpi-card"><div class="kpi-label">Mutual Fund</div><div class="kpi-value" id="kpiMutualFund">-</div></div>
+                        <div class="kpi-card"><div class="kpi-label">FII/FPI</div><div class="kpi-value" id="kpiFII">-</div></div>
                     </div>
                 </section>
 
@@ -134,87 +74,34 @@
                 <div id="overviewTab" class="tab-content active">
                     <div class="two-column-layout">
                         <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Market Snapshot</span>
-                            </div>
+                            <div class="panel-header"><span class="panel-title">Market Snapshot</span></div>
                             <div class="market-grid">
-                                <div class="market-metric">
-                                    <div class="metric-label">Open</div>
-                                    <div class="metric-value" id="marketOpen">₹ -</div>
-                                </div>
-                                <div class="market-metric">
-                                    <div class="metric-label">High</div>
-                                    <div class="metric-value" id="marketHigh">₹ -</div>
-                                </div>
-                                <div class="market-metric">
-                                    <div class="metric-label">Low</div>
-                                    <div class="metric-value" id="marketLow">₹ -</div>
-                                </div>
-                                <div class="market-metric">
-                                    <div class="metric-label">Close</div>
-                                    <div class="metric-value" id="marketClose">₹ -</div>
-                                </div>
-                                <div class="market-metric">
-                                    <div class="metric-label">Volume</div>
-                                    <div class="metric-value" id="marketVolume">-</div>
-                                </div>
-                                <div class="market-metric">
-                                    <div class="metric-label">Value</div>
-                                    <div class="metric-value" id="marketValue">₹ -</div>
-                                </div>
+                                <div class="market-metric"><div class="metric-label">Open</div><div class="metric-value" id="marketOpen">₹ -</div></div>
+                                <div class="market-metric"><div class="metric-label">High</div><div class="metric-value" id="marketHigh">₹ -</div></div>
+                                <div class="market-metric"><div class="metric-label">Low</div><div class="metric-value" id="marketLow">₹ -</div></div>
+                                <div class="market-metric"><div class="metric-label">Close</div><div class="metric-value" id="marketClose">₹ -</div></div>
+                                <div class="market-metric"><div class="metric-label">Volume</div><div class="metric-value" id="marketVolume">-</div></div>
+                                <div class="market-metric"><div class="metric-label">Value</div><div class="metric-value" id="marketValue">₹ -</div></div>
                             </div>
                         </div>
-
                         <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Shareholding Pattern</span>
-                            </div>
+                            <div class="panel-header"><span class="panel-title">Shareholding Pattern</span></div>
                             <div class="shareholding-grid">
-                                <div class="shareholding-item">
-                                    <div class="shareholding-label">Promoters</div>
-                                    <div class="shareholding-value" id="holdingPromoter">-</div>
-                                </div>
-                                <div class="shareholding-item">
-                                    <div class="shareholding-label">Public</div>
-                                    <div class="shareholding-value" id="holdingPublic">-</div>
-                                </div>
-                                <div class="shareholding-item">
-                                    <div class="shareholding-label">Mutual Funds</div>
-                                    <div class="shareholding-value" id="holdingMutualFund">-</div>
-                                </div>
-                                <div class="shareholding-item">
-                                    <div class="shareholding-label">FPI / FII</div>
-                                    <div class="shareholding-value" id="holdingFPI">-</div>
-                                </div>
+                                <div class="shareholding-item"><div class="shareholding-label">Promoters</div><div class="shareholding-value" id="holdingPromoter">-</div></div>
+                                <div class="shareholding-item"><div class="shareholding-label">Public</div><div class="shareholding-value" id="holdingPublic">-</div></div>
+                                <div class="shareholding-item"><div class="shareholding-label">Mutual Funds</div><div class="shareholding-value" id="holdingMutualFund">-</div></div>
+                                <div class="shareholding-item"><div class="shareholding-label">FPI / FII</div><div class="shareholding-value" id="holdingFPI">-</div></div>
                             </div>
                         </div>
                     </div>
-
                     <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Company Details</span>
-                        </div>
+                        <div class="panel-header"><span class="panel-title">Company Details</span></div>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                            <div>
-                                <div class="metric-label" style="margin-bottom: 6px;">ISIN</div>
-                                <div id="companyISIN" class="metric-value">-</div>
-                            </div>
-                            <div>
-                                <div class="metric-label" style="margin-bottom: 6px;">FINCODE</div>
-                                <div id="companyFincode" class="metric-value">-</div>
-                            </div>
-                            <div>
-                                <div class="metric-label" style="margin-bottom: 6px;">Chairman</div>
-                                <div id="companyChairman" style="color: var(--text-secondary); font-size: 14px;">-</div>
-                            </div>
-                            <div>
-                                <div class="metric-label" style="margin-bottom: 6px;">Managing Director</div>
-                                <div id="companyMD" style="color: var(--text-secondary); font-size: 14px;">-</div>
-                            </div>
-                            <div style="grid-column: 1 / -1;">
-                                <div class="metric-label" style="margin-bottom: 6px;">Company Secretary</div>
-                                <div id="companyCS" style="color: var(--text-secondary); font-size: 14px;">-</div>
-                            </div>
+                            <div><div class="metric-label">ISIN</div><div id="companyISIN" class="metric-value">-</div></div>
+                            <div><div class="metric-label">FINCODE</div><div id="companyFincode" class="metric-value">-</div></div>
+                            <div><div class="metric-label">Chairman</div><div id="companyChairman" style="color: var(--text-secondary); font-size: 14px;">-</div></div>
+                            <div><div class="metric-label">Managing Director</div><div id="companyMD" style="color: var(--text-secondary); font-size: 14px;">-</div></div>
+                            <div style="grid-column: 1 / -1;"><div class="metric-label">Company Secretary</div><div id="companyCS" style="color: var(--text-secondary); font-size: 14px;">-</div></div>
                         </div>
                     </div>
                 </div>
@@ -222,195 +109,83 @@
                 <!-- Financials Tab -->
                 <div id="financialsTab" class="tab-content">
                     <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Financial Summary</span>
-                        </div>
+                        <div class="panel-header"><span class="panel-title">Financial Summary</span></div>
                         <div class="financial-summary-grid">
-                            <div class="financial-item">
-                                <div class="financial-label">Year End</div>
-                                <div class="financial-value" id="finYearEnd">-</div>
-                            </div>
-                            <div class="financial-item">
-                                <div class="financial-label">Revenue</div>
-                                <div class="financial-value" id="finRevenue">₹ -</div>
-                            </div>
-                            <div class="financial-item">
-                                <div class="financial-label">Operating Profit</div>
-                                <div class="financial-value" id="finOperatingProfit">₹ -</div>
-                            </div>
-                            <div class="financial-item">
-                                <div class="financial-label">PAT</div>
-                                <div class="financial-value" id="finPAT">₹ -</div>
-                            </div>
-                            <div class="financial-item">
-                                <div class="financial-label">EPS</div>
-                                <div class="financial-value" id="finEPS">-</div>
-                            </div>
-                            <div class="financial-item">
-                                <div class="financial-label">Dividend %</div>
-                                <div class="financial-value" id="finDividend">-</div>
-                            </div>
+                            <div class="financial-item"><div class="financial-label">Year End</div><div class="financial-value" id="finYearEnd">-</div></div>
+                            <div class="financial-item"><div class="financial-label">Revenue</div><div class="financial-value" id="finRevenue">₹ -</div></div>
+                            <div class="financial-item"><div class="financial-label">Operating Profit</div><div class="financial-value" id="finOperatingProfit">₹ -</div></div>
+                            <div class="financial-item"><div class="financial-label">PAT</div><div class="financial-value" id="finPAT">₹ -</div></div>
+                            <div class="financial-item"><div class="financial-label">EPS</div><div class="financial-value" id="finEPS">-</div></div>
+                            <div class="financial-item"><div class="financial-label">Dividend %</div><div class="financial-value" id="finDividend">-</div></div>
                         </div>
                     </div>
-
-                   <div class="section-divider"></div>
-
-<div class="panel">
-
-    <div class="panel-header">
-        <span class="panel-title">
-            Market Analysis (Yahoo Finance)
-        </span>
-    </div>
-
-    <div class="financial-summary-grid">
-
-        <div class="financial-item">
-            <div class="financial-label">Current Price</div>
-            <div class="financial-value" id="yfCurrentPrice">-</div>
-        </div>
-
-        <div class="financial-item">
-            <div class="financial-label">PE Ratio</div>
-            <div class="financial-value" id="yfPE">-</div>
-        </div>
-
-        <div class="financial-item">
-            <div class="financial-label">52W High</div>
-            <div class="financial-value" id="yfHigh">-</div>
-        </div>
-
-        <div class="financial-item">
-            <div class="financial-label">52W Low</div>
-            <div class="financial-value" id="yfLow">-</div>
-        </div>
-
-        <div class="financial-item">
-            <div class="financial-label">Market Cap</div>
-            <div class="financial-value" id="yfMarketCap">-</div>
-        </div>
-
-        <div class="financial-item">
-            <div class="financial-label">Volume</div>
-            <div class="financial-value" id="yfVolume">-</div>
-        </div>
-
-    </div>
-
-</div>
-
-<div class="section-divider"></div>
-
+                    <div class="section-divider"></div>
                     <div class="panel">
-    <div class="panel-header">
-        <span class="panel-title">Stock Price Trend (6 Months)</span>
-    </div>
-
-    <canvas id="stockPriceChart"></canvas>
-    <canvas id="volumeChart"></canvas>
-</div>
-</div>
-
-                    
+                        <div class="panel-header"><span class="panel-title">Market Analysis (Yahoo Finance)</span></div>
+                        <div class="financial-summary-grid">
+                            <div class="financial-item"><div class="financial-label">Current Price</div><div class="financial-value" id="yfCurrentPrice">-</div></div>
+                            <div class="financial-item"><div class="financial-label">PE Ratio</div><div class="financial-value" id="yfPE">-</div></div>
+                            <div class="financial-item"><div class="financial-label">52W High</div><div class="financial-value" id="yfHigh">-</div></div>
+                            <div class="financial-item"><div class="financial-label">52W Low</div><div class="financial-value" id="yfLow">-</div></div>
+                            <div class="financial-item"><div class="financial-label">Market Cap</div><div class="financial-value" id="yfMarketCap">-</div></div>
+                            <div class="financial-item"><div class="financial-label">Volume</div><div class="financial-value" id="yfVolume">-</div></div>
+                        </div>
+                    </div>
+                    <div class="section-divider"></div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">Stock Price Trend (6 Months)</span></div>
+                        <canvas id="stockPriceChart"></canvas>
+                    </div>
+                </div>
 
                 <!-- News & Updates Tab -->
                 <div id="newsTab" class="tab-content">
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Latest News</span>
-                        </div>
-                        <div id="newsList"></div>
-                    </div>
-
+                    <div class="panel"><div class="panel-header"><span class="panel-title">Latest News</span></div><div id="newsList"></div></div>
                     <div class="section-divider"></div>
-
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Announcements</span>
-                        </div>
-                        <div id="announcementsList"></div>
-                    </div>
-
+                    <div class="panel"><div class="panel-header"><span class="panel-title">Announcements</span></div><div id="announcementsList"></div></div>
                     <div class="section-divider"></div>
-
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Corporate Actions</span>
-                        </div>
-                        <div id="actionsList"></div>
-                    </div>
+                    <div class="panel"><div class="panel-header"><span class="panel-title">Corporate Actions</span></div><div id="actionsList"></div></div>
                 </div>
 
                 <!-- AI Analysis Tab -->
                 <div id="analysisTab" class="tab-content">
                     <div class="panel ai-analysis-section">
-                       <div class="panel-header ai-header">
+                        <div class="panel-header ai-header">
+                            <span class="ai-badge">🤖 AI Analysis</span>
+                            <div class="ai-model-switch">
+                                <button id="ollamaChip" class="ai-chip active" type="button">Ollama</button>
+                                <button id="openaiChip" class="ai-chip" type="button">OpenAI</button>
+                            </div>
+                        </div>
+                        <div class="ai-summary-content">
+                            <div class="ai-summary-text" id="aiOverview">Loading AI analysis...</div>
+                        </div>
+                    </div>
 
-    <span class="ai-badge">🤖 AI Analysis</span>
+                    <div class="section-divider"></div>
 
-    <div class="ai-model-switch">
-
-        <button
-            id="ollamaChip"
-            class="ai-chip active"
-            type="button"
-        >
-            Ollama
-        </button>
-
-        <button
-            id="openaiChip"
-            class="ai-chip"
-            type="button"
-        >
-            OpenAI
-        </button>
-
-    </div>
-    
-
-</div>
-                       <div class="ai-summary-content">
-
-    <div class="ai-summary-text" id="aiOverview">
-        Loading AI analysis...
-    </div>
-
-</div>
-
-<div class="section-divider"></div>
-
-<div class="panel ai-copilot-panel">
-
-    <div class="panel-header">
-        <span class="panel-title">
-            💬 Ask AI ASSISTANT
-        </span>
-    </div>
-
-    <div class="copilot-subtitle">
-        Ask questions about financials, announcements,
-        shareholding, risks and company performance.
-    </div>
-
-    
-
-    <textarea
-        id="aiQuestion"
-        placeholder="Ask anything about this company..."
-    ></textarea>
-
-    <button id="askAIButton">
-        Ask AI
-    </button>
-
-    <div id="aiAnswer"></div>
-
-</div>
+                    <!-- CHAT UI - New conversation style -->
+                    <div class="panel ai-copilot-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">💬 AI Research Copilot</span>
+                        </div>
+                        <div class="copilot-subtitle">
+                            Ask anything about this company. The assistant remembers the conversation.
+                        </div>
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="chat-welcome">
+                                <div class="chat-bot-message">
+                                    👋 Hello! I'm your AI research assistant. Ask me about financials, announcements, shareholding, market data, or anything else about this company.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea id="aiQuestion" placeholder="Ask a follow-up question..." rows="1"></textarea>
+                            <button id="askAIButton" class="chat-send-btn">Send</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        
         </main>
     </div>
 
