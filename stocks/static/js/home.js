@@ -468,9 +468,11 @@ askAIButton.addEventListener(
     async () => {
 
         const question =
-            aiQuestion.value.trim();
+    ai.value.trim();
 
-        if (!question) return;
+        if (!question) {
+            return;
+        }
 
         askAIButton.classList.add("active");
         askAIButton.disabled = true;
@@ -480,6 +482,9 @@ askAIButton.addEventListener(
             "Generating answer...";
 
         try {
+
+            console.log("Current Fincode:", currentFincode);
+            console.log("Question:", question);
 
             const response = await fetch(
                 `/company/${currentFincode}/chat/`,
@@ -494,8 +499,14 @@ askAIButton.addEventListener(
                 }
             );
 
+            if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+}
+
             const data =
                 await response.json();
+
+            console.log("Response:", data);
 
             aiAnswer.textContent =
                 data.answer;

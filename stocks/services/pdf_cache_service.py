@@ -1,5 +1,6 @@
 from stocks.models import AnnouncementPdfCache
 from stocks.services.pdf_service import extract_pdf_text_from_url
+from stocks.services.chunking_service import create_chunks_for_pdf
 
 
 def get_or_create_pdf_cache(newsid, scripcode, attachment_url):
@@ -23,12 +24,14 @@ def get_or_create_pdf_cache(newsid, scripcode, attachment_url):
     if not pdf_text:
         return None
 
-    AnnouncementPdfCache.objects.create(
+    pdf_cache = AnnouncementPdfCache.objects.create(
     newsid=newsid,
     scripcode=scripcode,
     attachment_url=attachment_url,
     pdf_text=pdf_text,
     processed=True
 )
+
+    create_chunks_for_pdf(pdf_cache)
 
     return pdf_text
