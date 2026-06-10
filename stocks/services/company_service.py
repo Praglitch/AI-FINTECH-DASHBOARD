@@ -1,11 +1,12 @@
 from ..database.db_connection import get_connection
 
-
 def search_company_data(query):
-
+    """
+    Search company_master by partial name, symbol, or fincode.
+    Returns list of {compname, symbol, fincode} for frontend dropdown.
+    """
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         SELECT compname, symbol, fincode
         FROM company_master
@@ -18,49 +19,28 @@ def search_company_data(query):
         f"%{query.lower()}%",
         f"%{query}%"
     ])
-
     rows = cursor.fetchall()
-
     cursor.close()
     conn.close()
 
-    data = []
-
-    for row in rows:
-        data.append({
-            "compname": row[0],
-            "symbol": row[1],
-            "fincode": row[2]
-        })
-
-    return data
+    return [{"compname": r[0], "symbol": r[1], "fincode": r[2]} for r in rows]
 
 
 def get_company_details_data(fincode):
-
+    """
+    Fetch full company profile for a given fincode.
+    Returns dict or None if not found.
+    """
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
-        SELECT
-            fincode,
-            compname,
-            s_name,
-            symbol,
-            industry,
-            house,
-            chairman,
-            mdir,
-            cosec,
-            status,
-            isin
+        SELECT fincode, compname, s_name, symbol, industry, house,
+               chairman, mdir, cosec, status, isin
         FROM company_master
         WHERE fincode = %s
         LIMIT 1
     """, [fincode])
-
     row = cursor.fetchone()
-
     cursor.close()
     conn.close()
 
