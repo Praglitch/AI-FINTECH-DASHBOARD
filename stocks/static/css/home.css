@@ -784,3 +784,104 @@ body {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+
+/* Logout button */
+.logout-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin-left: auto;
+    transition: all 0.2s;
+}
+.logout-btn:hover {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+}
+
+/* Back to Search button */
+.back-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 16px;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+.back-btn:hover {
+    color: var(--accent-blue);
+}
+
+/* Header layout */
+.header-sticky {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.back-arrow-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    padding: 0 8px;
+}
+.back-arrow-btn:hover {
+    color: var(--accent-blue);
+}
+.settings-wrapper {
+    position: relative;
+}
+.settings-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    padding: 0 8px;
+}
+.settings-btn:hover {
+    color: var(--accent-blue);
+}
+.settings-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    min-width: 120px;
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    overflow: hidden;
+}
+.dropdown-item {
+    display: block;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.dropdown-item:hover {
+    background: var(--bg-tertiary);
+}
+.logout-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    font-family: inherit;
+}

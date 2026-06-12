@@ -16,6 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from stocks.views import help_page
+
+
 
 from stocks.views import (
     login_page,
@@ -32,7 +35,9 @@ from stocks.views import (
     company_ai_summary,
     company_openai_summary,
     company_yfinance,
-    company_chat
+    company_chat,
+    logout_view,
+    help_page
 )
 
 urlpatterns = [
@@ -41,6 +46,11 @@ urlpatterns = [
     path('', login_page, name='login'),
 
     path('home/', home, name='home'),
+    
+    path('logout/', logout_view, name='logout'),
+    
+    path('help/', help_page, name='help'),
+    
 
     path(
         'search/',

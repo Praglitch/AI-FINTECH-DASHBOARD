@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help - FinResearch</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header-sticky">
+            <div class="header-left">
+                <a href="/home/" class="back-arrow-btn" style="text-decoration: none;">←</a>
+                <div class="search-wrapper" style="opacity: 0.5; pointer-events: none;">
+                    <input type="text" class="search-input" placeholder="Search disabled on help page" disabled>
+                </div>
+            </div>
+            <div class="settings-wrapper">
+                <button id="settingsBtn" class="settings-btn">⚙️</button>
+                <div id="settingsDropdown" class="settings-dropdown" style="display: none;">
+                    <button id="helpBtn" class="dropdown-item">Help</button>
+                    <button id="logoutDropdownBtn" class="dropdown-item logout-item">Logout</button>
+                </div>
+            </div>
+        </header>
+        <main class="main-content" style="max-width: 800px; margin: 40px auto; padding: 20px;">
+            <h1>Help & Support</h1>
+            <p>Welcome to the AI Financial Research Dashboard.</p>
+            <h3>Features</h3>
+            <ul>
+                <li>Search for any Indian listed company by name, symbol, or fincode.</li>
+                <li>View financials, shareholding, market snapshot, news, announcements.</li>
+                <li>Ask the AI Copilot questions about the company.</li>
+                <li>Interactive OHLC chart with period/interval selection.</li>
+                <li>PDF ingestion from BSE announcements (chunked and searchable).</li>
+            </ul>
+            <p><a href="/home/">← Back to Dashboard</a></p>
+        </main>
+    </div>
+    <script>
+        // Settings dropdown (same as home.js)
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsDropdown = document.getElementById('settingsDropdown');
+        const logoutBtn = document.getElementById('logoutDropdownBtn');
+        if (settingsBtn && settingsDropdown) {
+            settingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsDropdown.style.display = settingsDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+            document.addEventListener('click', () => {
+                settingsDropdown.style.display = 'none';
+            });
+        }
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                window.location.href = '/logout/';
+            });
+        }
+    </script>
+</body>
+</html>

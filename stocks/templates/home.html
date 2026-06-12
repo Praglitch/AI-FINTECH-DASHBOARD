@@ -12,15 +12,26 @@
 
     <div class="app-container">
         <header class="header-sticky">
-            <div class="search-wrapper">
-                <input type="text" id="companySearch" class="search-input" placeholder="Search company, symbol, or fincode..." autocomplete="off" autofocus>
-                <div id="searchLoader" class="search-loader"></div>
-                <button id="clearSearch" class="clear-search">✕</button>
+            <div class="header-left">
+                <button id="backToEmptyBtn" class="back-arrow-btn" title="Back to search">←</button>
+                <div class="search-wrapper">
+                    <input type="text" id="companySearch" class="search-input" placeholder="Search company, symbol, or fincode..." autocomplete="off" autofocus>
+                    <div id="searchLoader" class="search-loader"></div>
+                    <button id="clearSearch" class="clear-search">✕</button>
+                </div>
             </div>
             <div id="searchResults" class="search-results"></div>
+            <div class="settings-wrapper">
+                <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
+               <div id="settingsDropdown" class="settings-dropdown" style="display: none;">
+    <button id="helpBtn" class="dropdown-item">Help</button>
+    <button id="logoutDropdownBtn" class="dropdown-item logout-item">Logout</button>
+</div>
+            </div>
         </header>
 
         <main class="main-content">
+            <!-- Empty state (no company selected) -->
             <div id="noResults" class="empty-state">
                 <div class="empty-state-icon">🔍</div>
                 <h2>Search for a Company</h2>
@@ -33,6 +44,7 @@
                 </div>
             </div>
 
+            <!-- Dashboard (hidden until company selected) -->
             <div id="dashboardContent" class="content-wrapper">
                 <!-- Hero Section -->
                 <section class="hero-section">
@@ -220,7 +232,6 @@
         </main>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>

@@ -21,6 +21,10 @@ from .services.corporate_actions_service import get_company_corporate_actions_da
 from .services.yfinance_services import get_yfinance_data
 from django.views.decorators.csrf import csrf_exempt
 from .services.ai_retrieval_service import build_context
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.shortcuts import render
+
 
 
 #LOGIN PAGE
@@ -382,3 +386,13 @@ def company_yfinance(request, fincode):
     interval = request.GET.get("interval", "1mo")
     data = get_yfinance_data(fincode, period, interval)
     return JsonResponse(data)
+
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+@login_required
+def help_page(request):
+    return render(request, 'help.html')   # create an empty help.html template
