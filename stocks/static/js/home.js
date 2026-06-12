@@ -14,43 +14,53 @@ let conversationHistory = [];
 
 // ---------- HELPER FUNCTIONS ----------
 function showLoadingPlaceholders() {
-    const spinnerHtml = '<span class="spinner"></span><span>Loading...</span>';
-    function setLoading(id) {
+    // Helper to set skeleton placeholder
+    function setSkeleton(id, width = '80%') {
         const el = document.getElementById(id);
-        if (el) el.innerHTML = `<div class="loading-placeholder">${spinnerHtml}</div>`;
+        if (el) el.innerHTML = `<div class="skeleton" style="width: ${width};"></div>`;
     }
-    setLoading('kpiRevenue');
-    setLoading('kpiPAT');
-    setLoading('kpiPromoter');
-    setLoading('kpiPublic');
-    setLoading('kpiMutualFund');
-    setLoading('kpiFII');
-    setLoading('holdingPromoter');
-    setLoading('holdingPublic');
-    setLoading('holdingMutualFund');
-    setLoading('holdingFPI');
-    setLoading('finYearEnd');
-    setLoading('finRevenue');
-    setLoading('finOperatingProfit');
-    setLoading('finPAT');
-    setLoading('finEPS');
-    setLoading('finDividend');
-    setLoading('yfCurrentPrice');
-    setLoading('yfPE');
-    setLoading('yfHigh');
-    setLoading('yfLow');
-    setLoading('yfMarketCap');
-    setLoading('yfVolume');
+
+    // KPI Cards
+    setSkeleton('kpiRevenue');
+    setSkeleton('kpiPAT');
+    setSkeleton('kpiPromoter', '60%');
+    setSkeleton('kpiPublic', '60%');
+    setSkeleton('kpiMutualFund', '70%');
+    setSkeleton('kpiFII', '60%');
     
+    // Shareholding values
+    setSkeleton('holdingPromoter', '60%');
+    setSkeleton('holdingPublic', '60%');
+    setSkeleton('holdingMutualFund', '70%');
+    setSkeleton('holdingFPI', '60%');
+    
+    // Financials tab
+    setSkeleton('finYearEnd', '50%');
+    setSkeleton('finRevenue', '70%');
+    setSkeleton('finOperatingProfit', '70%');
+    setSkeleton('finPAT', '70%');
+    setSkeleton('finEPS', '50%');
+    setSkeleton('finDividend', '50%');
+    
+    // YFinance Market Analysis
+    setSkeleton('yfCurrentPrice', '60%');
+    setSkeleton('yfPE', '50%');
+    setSkeleton('yfHigh', '60%');
+    setSkeleton('yfLow', '60%');
+    setSkeleton('yfMarketCap', '70%');
+    setSkeleton('yfVolume', '60%');
+
+    // News, announcements, actions – simple loading text
     const newsList = document.getElementById('newsList');
-    if (newsList) newsList.innerHTML = '<div class="placeholder"><span class="spinner"></span> Loading news...</div>';
+    if (newsList) newsList.innerHTML = '<div class="placeholder">Loading news...</div>';
     const announcementsList = document.getElementById('announcementsList');
-    if (announcementsList) announcementsList.innerHTML = '<div class="placeholder"><span class="spinner"></span> Loading announcements...</div>';
+    if (announcementsList) announcementsList.innerHTML = '<div class="placeholder">Loading announcements...</div>';
     const actionsList = document.getElementById('actionsList');
-    if (actionsList) actionsList.innerHTML = '<div class="placeholder"><span class="spinner"></span> Loading corporate actions...</div>';
+    if (actionsList) actionsList.innerHTML = '<div class="placeholder">Loading corporate actions...</div>';
     
+    // AI Overview – keep spinner+text (it's a single area)
     const aiOverview = document.getElementById('aiOverview');
-    if (aiOverview) aiOverview.innerHTML = `<div class="loading-placeholder">${spinnerHtml}</div>`;
+    if (aiOverview) aiOverview.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Loading AI analysis...</div>';
 }
 
 function resetAITab() {
@@ -88,10 +98,18 @@ function formatBotMessage(text) {
     return html;
 }
 
-function addMessageToChat(role, content, isError = false) {
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showError('Copied to clipboard!');
+    }).catch(err => console.error('Copy failed:', err));
+}
+
+function addMessageToChat(role, content, isError = false, originalQuestion = null) {
     if (!chatMessages) return;
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'bot-message'}`;
+
+    // Message bubble
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
     if (isError) bubble.style.backgroundColor = '#dc2626';
@@ -100,11 +118,66 @@ function addMessageToChat(role, content, isError = false) {
     } else {
         bubble.textContent = content;
     }
-    const timeSpan = document.createElement('div');
+
+    // Meta container (timestamp + action buttons)
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'message-meta';
+
+    const timeSpan = document.createElement('span');
     timeSpan.className = 'message-time';
     timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+    metaDiv.appendChild(timeSpan);
+
+    if (role === 'bot') {
+        // Copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'action-btn copy-btn';
+        copyBtn.innerHTML = '⎘';
+        copyBtn.title = 'Copy answer';
+        copyBtn.onclick = () => copyToClipboard(content);
+        metaDiv.appendChild(copyBtn);
+
+        // Regenerate button
+        const regenBtn = document.createElement('button');
+        regenBtn.className = 'action-btn regen-btn';
+        regenBtn.innerHTML = '⟳';
+        regenBtn.title = 'Regenerate answer';
+        regenBtn.onclick = () => {
+            if (originalQuestion) {
+                sendMessage(originalQuestion);
+            } else {
+                showError('Cannot regenerate: original question missing');
+            }
+        };
+        metaDiv.appendChild(regenBtn);
+
+        // Like button
+        const likeBtn = document.createElement('button');
+        likeBtn.className = 'action-btn like-btn';
+        likeBtn.innerHTML = '👍';
+        likeBtn.title = 'Like this answer';
+        likeBtn.onclick = () => {
+            console.log('Liked answer:', content);
+            showError('Thanks for your feedback!');
+            // TODO: send to backend later
+        };
+        metaDiv.appendChild(likeBtn);
+
+        // Dislike button
+        const dislikeBtn = document.createElement('button');
+        dislikeBtn.className = 'action-btn dislike-btn';
+        dislikeBtn.innerHTML = '👎';
+        dislikeBtn.title = 'Dislike this answer';
+        dislikeBtn.onclick = () => {
+            console.log('Disliked answer:', content);
+            showError('Thanks for your feedback!');
+            // TODO: send to backend later
+        };
+        metaDiv.appendChild(dislikeBtn);
+    }
+
     messageDiv.appendChild(bubble);
-    messageDiv.appendChild(timeSpan);
+    messageDiv.appendChild(metaDiv);
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -124,18 +197,18 @@ function removeTypingIndicator() {
     if (indicator) indicator.remove();
 }
 
-async function sendMessage() {
+async function sendMessage(overrideQuestion = null) {
     if (!currentFincode) {
         addMessageToChat('bot', 'Please select a company first.', true);
         return;
     }
-    const question = aiQuestion.value.trim();
+    const question = (overrideQuestion !== null) ? overrideQuestion : aiQuestion.value.trim();
     if (!question) return;
     
     askAIButton.disabled = true;
     aiQuestion.disabled = true;
     addMessageToChat('user', question);
-    aiQuestion.value = '';
+    if (overrideQuestion === null) aiQuestion.value = '';
     showTypingIndicator();
     
     try {
@@ -147,7 +220,7 @@ async function sendMessage() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         removeTypingIndicator();
-        addMessageToChat('bot', data.answer);
+        addMessageToChat('bot', data.answer, false, question);
         conversationHistory.push({ role: 'user', content: question });
         conversationHistory.push({ role: 'assistant', content: data.answer });
     } catch (error) {
@@ -220,7 +293,6 @@ async function selectCompany(fincode) {
     document.getElementById('companyName').textContent = 'Loading...';
     
     try {
-        // Critical data first
         const [company, market] = await Promise.all([
             fetch(`/company/${fincode}/`).then(r => r.json()),
             fetch(`/company-market/${fincode}/`).then(r => r.json())
@@ -240,7 +312,6 @@ async function selectCompany(fincode) {
         dashboardContent.classList.remove('loading-blur');
         searchLoader.style.display = 'none';
         
-        // Fetch remaining data in parallel, but don't fail the whole page if one fails
         const results = await Promise.allSettled([
             fetch(`/company-shareholding/${fincode}/`).then(r => r.json()),
             fetch(`/company/${fincode}/ai-summary/`).then(r => r.json()),
@@ -251,7 +322,6 @@ async function selectCompany(fincode) {
             fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json())
         ]);
         
-        // Extract values with fallbacks
         const shareholding = results[0].status === 'fulfilled' ? results[0].value : { promoter: '--', public: '--', mutual_fund: '--', fpi: '--' };
         const ai = results[1].status === 'fulfilled' ? results[1].value : { summary: 'AI analysis not available' };
         const financials = results[2].status === 'fulfilled' ? results[2].value : { net_sales: '--', profit_after_tax: '--', year_end: '--', operating_profit: '--', reported_eps: '--', dividend_perc: '--' };
@@ -275,13 +345,8 @@ async function selectCompany(fincode) {
         if (company && company.compname) searchInput.value = company.compname;
         if (searchInput.value.trim()) clearButton.style.display = 'block';
         
-        // Show a single non-intrusive toast if some data failed, but don't alert
         const failedCount = results.filter(r => r.status === 'rejected').length;
-        if (failedCount > 0) {
-            console.warn(`${failedCount} background API(s) failed`);
-            // Optional: show a subtle toast instead of error
-            // showError('Some data could not be loaded', 2000);
-        }
+        if (failedCount > 0) console.warn(`${failedCount} background API(s) failed`);
         
     } catch(error) {
         dashboardContent.classList.remove('loading-blur');
@@ -293,13 +358,11 @@ async function selectCompany(fincode) {
 
 // ---------- DASHBOARD UPDATE ----------
 function updateDashboard(company, market, shareholding, ai, financials, announcements, news, actions, yfinance) {
-    // Hero section
     document.getElementById('companyName').textContent = company.compname;
     document.getElementById('companySymbol').textContent = company.symbol || 'N/A';
     document.getElementById('companyIndustry').textContent = company.industry || 'N/A';
     document.getElementById('companyStatus').textContent = company.status || 'N/A';
     
-    // KPI Cards
     document.getElementById('kpiRevenue').textContent = formatNumber(financials.net_sales);
     document.getElementById('kpiPAT').textContent = formatNumber(financials.profit_after_tax);
     document.getElementById('kpiPromoter').textContent = (shareholding.promoter || '--') + '%';
@@ -307,7 +370,6 @@ function updateDashboard(company, market, shareholding, ai, financials, announce
     document.getElementById('kpiMutualFund').textContent = (shareholding.mutual_fund || '--') + '%';
     document.getElementById('kpiFII').textContent = (shareholding.fpi || '--') + '%';
     
-    // Market Snapshot
     document.getElementById('marketOpen').textContent = '₹ ' + (market.open || '--');
     document.getElementById('marketHigh').textContent = '₹ ' + (market.high || '--');
     document.getElementById('marketLow').textContent = '₹ ' + (market.low || '--');
@@ -315,20 +377,17 @@ function updateDashboard(company, market, shareholding, ai, financials, announce
     document.getElementById('marketVolume').textContent = market.volume || '--';
     document.getElementById('marketValue').textContent = '₹ ' + (market.value || '--');
     
-    // Shareholding
     document.getElementById('holdingPromoter').textContent = (shareholding.promoter || '--') + '%';
     document.getElementById('holdingPublic').textContent = (shareholding.public || '--') + '%';
     document.getElementById('holdingMutualFund').textContent = (shareholding.mutual_fund || '--') + '%';
     document.getElementById('holdingFPI').textContent = (shareholding.fpi || '--') + '%';
     
-    // Company Details
     document.getElementById('companyISIN').textContent = company.isin || 'N/A';
     document.getElementById('companyFincode').textContent = company.fincode;
     document.getElementById('companyChairman').textContent = company.chairman || 'N/A';
     document.getElementById('companyMD').textContent = company.mdir || 'N/A';
     document.getElementById('companyCS').textContent = company.cosec || 'N/A';
     
-    // Financials Tab
     document.getElementById('finYearEnd').textContent = financials.year_end || '--';
     document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(financials.net_sales);
     document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(financials.operating_profit);
@@ -336,7 +395,6 @@ function updateDashboard(company, market, shareholding, ai, financials, announce
     document.getElementById('finEPS').textContent = financials.reported_eps || '--';
     document.getElementById('finDividend').textContent = (financials.dividend_perc || '--') + '%';
     
-    // YFinance Market Analysis
     const currentPriceValue = yfinance.current_price ?? '--';
     const originalPriceText = currentPriceValue !== '--' ? `₹ ${currentPriceValue}` : '--';
     document.getElementById('yfCurrentPrice').textContent = originalPriceText;
@@ -348,7 +406,6 @@ function updateDashboard(company, market, shareholding, ai, financials, announce
     document.getElementById('yfMarketCap').textContent = formatNumber(yfinance.market_cap);
     document.getElementById('yfVolume').textContent = formatNumber(yfinance.volume);
     
-    // Chart
     if (yfinance.chart_data && yfinance.chart_data.length > 0) {
         renderPriceChart(yfinance.chart_data);
     } else {
@@ -356,15 +413,10 @@ function updateDashboard(company, market, shareholding, ai, financials, announce
         if (ctx) ctx.clearRect(0, 0, ctx.width || 500, ctx.height || 300);
     }
     
-    // News, announcements, actions
     updateNewsList(news);
     updateAnnouncementsList(announcements);
     updateActionsList(actions);
-    
-    // AI Analysis
     updateAIAnalysis(ai);
-    
-    // Update search input
     searchInput.value = company.compname;
 }
 
@@ -467,7 +519,6 @@ function renderPriceChart(chartData) {
         }
     });
 
-    // Hover listeners
     const canvas = document.getElementById('priceChart');
     const handleMouseMove = (e) => {
         if (!priceChart) return;
@@ -524,17 +575,57 @@ async function refreshChart() {
     }
 }
 
-// ---------- TAB SYSTEM ----------
-document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-        const tabName = button.getAttribute('data-tab');
-        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        button.classList.add('active');
-        document.getElementById(tabName + 'Tab').classList.add('active');
+// ---------- TAB SYSTEM (with persistence) ----------
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabs = ['overview', 'financials', 'news', 'analysis'];
+
+function setActiveTab(tabName) {
+    tabButtons.forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabName) {
+            btn.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        } else {
+            btn.classList.remove('active');
+            document.getElementById(btn.getAttribute('data-tab') + 'Tab').classList.remove('active');
+        }
+    });
+    localStorage.setItem('lastActiveTab', tabName);
+}
+
+tabButtons.forEach(btn => {
+    btn.removeEventListener('click', () => {});
+    btn.addEventListener('click', (e) => {
+        const tabName = btn.getAttribute('data-tab');
+        setActiveTab(tabName);
     });
 });
+const lastTab = localStorage.getItem('lastActiveTab');
+if (lastTab && tabs.includes(lastTab)) {
+    setActiveTab(lastTab);
+} else {
+    setActiveTab('overview');
+}
 
+// ---------- SUGGESTED PROMPTS ----------
+function attachPromptListeners() {
+    const chips = document.querySelectorAll('.prompt-chip');
+    chips.forEach(chip => {
+        chip.removeEventListener('click', chip._listener);
+        const handler = () => {
+            aiQuestion.value = chip.textContent;
+            aiQuestion.focus();
+        };
+        chip.addEventListener('click', handler);
+        chip._listener = handler;
+    });
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachPromptListeners);
+} else {
+    attachPromptListeners();
+}
+
+// ---------- EVENT LISTENERS ----------
 document.addEventListener('click', (e) => {
     const clickedExampleCompany = e.target.closest('.example-company');
     if (e.target !== searchInput && !searchResults.contains(e.target) && !clickedExampleCompany) {
@@ -587,7 +678,6 @@ openaiChip.addEventListener('click', async () => {
     document.getElementById('aiOverview').innerHTML = data.summary;
 });
 
-// ---------- CHART EVENT LISTENERS ----------
 const periodSelect = document.getElementById('periodSelect');
 const intervalSelect = document.getElementById('intervalSelect');
 const refreshBtn = document.getElementById('refreshChartBtn');
@@ -597,8 +687,7 @@ if (periodSelect && intervalSelect && refreshBtn) {
     intervalSelect.addEventListener('change', refreshChart);
 }
 
-// ---------- CHAT EVENT LISTENERS ----------
-if (askAIButton) askAIButton.addEventListener('click', sendMessage);
+if (askAIButton) askAIButton.addEventListener('click', () => sendMessage());
 if (aiQuestion) aiQuestion.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();

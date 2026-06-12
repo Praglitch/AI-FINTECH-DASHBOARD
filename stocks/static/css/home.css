@@ -685,3 +685,102 @@ body {
 .message-bubble li { margin: 2px 0; }
 .message-bubble strong { color: #fbbf24; }
 .message-bubble br { display: block; margin: 4px 0; content: ""; }
+
+
+/* Add these styles to your existing home.css (replace any existing .suggested-prompts, .prompt-chip, .copy-btn) */
+
+.suggested-prompts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 8px 0;
+}
+.prompt-chip {
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+    border: 1px solid var(--accent-blue);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.prompt-chip:hover {
+    background: var(--accent-blue);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59,130,246,0.3);
+}
+
+/* Message meta (timestamp + copy button) */
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    padding: 2px;
+    border-radius: 4px;
+}
+.copy-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+.message-bubble {
+    position: relative;
+}
+
+
+
+
+/* Action buttons for chat messages */
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    margin-left: 12px;
+    margin-right: 12px;
+}
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+.action-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+
+/* Skeleton loading effect */
+.skeleton {
+    background: linear-gradient(90deg, var(--bg-panel) 25%, var(--bg-tertiary) 50%, var(--bg-panel) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    height: 24px;
+    width: 80%;
+}
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

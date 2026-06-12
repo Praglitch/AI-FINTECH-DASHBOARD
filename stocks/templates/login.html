@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
 </head>
 <body>
-
     <div class="login-shell">
         <section class="brand-panel">
             <div>
@@ -25,7 +22,6 @@
                 <h1>Trustworthy research for modern investors.</h1>
                 <p>Access a professional finance workspace for analysis, monitoring, and decision support.</p>
             </div>
-
             <div class="feature-grid">
                 <div class="feature-card">
                     <strong>Corporate-grade workspace</strong>
@@ -42,33 +38,29 @@
             <h2>Welcome back</h2>
             <p class="subtext">Sign in to continue into your financial intelligence platform.</p>
 
-            <form method="POST">
+            <form method="POST" id="loginForm">
                 {% csrf_token %}
                 {% if error %}
-<div class="error-message">
-    {{ error }}
-</div>
-{% endif %}
+                <div class="error-message">{{ error }}</div>
+                {% endif %}
 
                 <div class="field">
                     <label>Username:</label>
-                    <input
-    type="text"
-    name="username"
-    id="username"
-    autofocus
->
+                    <input type="text" name="username" id="username" autofocus required>
                 </div>
 
                 <div class="field">
                     <label>Password:</label>
-                    <input type="password" name="password" id="password">
+                    <input type="password" name="password" id="password" required>
                 </div>
 
-                <button type="submit">Login</button>
+                <button type="submit" id="loginButton">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-spinner" style="display: none;">⏳</span>
+                </button>
             </form>
         </section>
     </div>
-<script src="{% static 'js/login.js' %}"></script>
+    <script src="{% static 'js/login.js' %}"></script>
 </body>
 </html>

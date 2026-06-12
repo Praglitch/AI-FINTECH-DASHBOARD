@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 {% load static %}
 <head>
     <meta charset="UTF-8">
@@ -9,7 +8,6 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 <body>
-
     <div id="errorToast" class="error-toast">Something went wrong</div>
 
     <div class="app-container">
@@ -209,6 +207,12 @@
                         <div class="chat-input-area">
                             <textarea id="aiQuestion" placeholder="Ask a follow-up question..." rows="1"></textarea>
                             <button id="askAIButton" class="chat-send-btn">Send</button>
+                        </div>
+                        <div class="suggested-prompts">
+                            <button class="prompt-chip">What are the risks?</button>
+                            <button class="prompt-chip">Compare with last quarter</button>
+                            <button class="prompt-chip">Should I buy?</button>
+                            <button class="prompt-chip">Explain debt levels</button>
                         </div>
                     </div>
                 </div>
