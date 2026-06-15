@@ -47,8 +47,13 @@ def get_company_announcements_data(fincode):
 
         # 🔥 NEW: Trigger PDF cache for announcements with attachments
         if attachment_url:
-            print(f"Processing PDF for newsid: {newsid}")
-            get_or_create_pdf_cache(newsid, scripcode, attachment_url)
+            import threading
+            print(f"Processing PDF for newsid: {newsid} (background)")
+            threading.Thread(
+                target=get_or_create_pdf_cache,
+                args=(newsid, scripcode, attachment_url),
+                daemon=True
+            ).start()
 
         announcements.append({
             "newsid": newsid,
