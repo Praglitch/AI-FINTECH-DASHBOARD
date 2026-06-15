@@ -27,7 +27,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=)od$=l*rlw0v-bsupisa=z)xmyy^c15bes$q20lwh2u3xexme'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
