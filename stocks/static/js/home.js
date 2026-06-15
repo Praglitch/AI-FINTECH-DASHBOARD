@@ -351,6 +351,7 @@ async function selectCompany(fincode) {
             mdir: company.mdir,
             cosec: company.cosec
         }, market, shareholding, ai, financials, announcements, news, actions, yfinance);
+        
         // Show back arrow after successful company load
         if (backToEmptyBtn) backToEmptyBtn.style.display = 'inline-block';
         if (company && company.compname) searchInput.value = company.compname;
