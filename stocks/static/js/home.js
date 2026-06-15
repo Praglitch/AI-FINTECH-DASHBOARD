@@ -324,40 +324,64 @@ async function selectCompany(fincode) {
         document.getElementById('marketValue').textContent = '₹ ' + (market.value || '--');
         dashboardContent.classList.remove('loading-blur');
         searchLoader.style.display = 'none';
-        const results = await Promise.allSettled([
-            fetch(`/company-shareholding/${fincode}/`).then(r => r.json()),
-            fetch(`/company/${fincode}/ai-summary/`).then(r => r.json()),
-            fetch(`/company/${fincode}/financials/`).then(r => r.json()),
-            fetch(`/company/${fincode}/announcements/`).then(r => r.json()),
-            fetch(`/company/${fincode}/news/`).then(r => r.json()),
-            fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()),
-            fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json())
-        ]);
-        const shareholding = results[0].status === 'fulfilled' ? results[0].value : { promoter: '--', public: '--', mutual_fund: '--', fpi: '--' };
-        const ai = results[1].status === 'fulfilled' ? results[1].value : { summary: 'AI analysis not available' };
-        const financials = results[2].status === 'fulfilled' ? results[2].value : { net_sales: '--', profit_after_tax: '--', year_end: '--', operating_profit: '--', reported_eps: '--', dividend_perc: '--' };
-        const announcements = results[3].status === 'fulfilled' ? results[3].value : [];
-        const news = results[4].status === 'fulfilled' ? results[4].value : [];
-        const actions = results[5].status === 'fulfilled' ? results[5].value : { actions: [] };
-        const yfinance = results[6].status === 'fulfilled' ? results[6].value : { chart_data: [], current_price: '--', pe_ratio: '--', fifty_two_week_high: '--', fifty_two_week_low: '--', market_cap: '--', volume: '--' };
-        updateDashboard({
-            compname: company.compname,
-            symbol: company.symbol,
-            industry: company.industry,
-            status: company.status,
-            isin: company.isin,
-            fincode: company.fincode,
-            chairman: company.chairman,
-            mdir: company.mdir,
-            cosec: company.cosec
-        }, market, shareholding, ai, financials, announcements, news, actions, yfinance);
-        
+        // ---- Background data: load in parallel, update UI as each finishes ----
+// Shareholding
+fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
+    document.getElementById('holdingPromoter').textContent = (data.promoter || '--') + '%';
+    document.getElementById('holdingPublic').textContent = (data.public || '--') + '%';
+    document.getElementById('holdingMutualFund').textContent = (data.mutual_fund || '--') + '%';
+    document.getElementById('holdingFPI').textContent = (data.fpi || '--') + '%';
+    document.getElementById('kpiPromoter').textContent = (data.promoter || '--') + '%';
+    document.getElementById('kpiPublic').textContent = (data.public || '--') + '%';
+    document.getElementById('kpiMutualFund').textContent = (data.mutual_fund || '--') + '%';
+    document.getElementById('kpiFII').textContent = (data.fpi || '--') + '%';
+}).catch(e => console.warn('shareholding error', e));
+
+// Financials
+fetch(`/company/${fincode}/financials/`).then(r => r.json()).then(data => {
+    document.getElementById('kpiRevenue').textContent = formatNumber(data.net_sales);
+    document.getElementById('kpiPAT').textContent = formatNumber(data.profit_after_tax);
+    document.getElementById('finYearEnd').textContent = data.year_end || '--';
+    document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(data.net_sales);
+    document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(data.operating_profit);
+    document.getElementById('finPAT').textContent = '₹ ' + formatNumber(data.profit_after_tax);
+    document.getElementById('finEPS').textContent = data.reported_eps || '--';
+    document.getElementById('finDividend').textContent = (data.dividend_perc || '--') + '%';
+}).catch(e => console.warn('financials error', e));
+
+// News
+fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => updateNewsList(data)).catch(e => console.warn('news error', e));
+
+// Announcements (these may trigger PDF downloads – keep as is)
+fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => updateAnnouncementsList(data)).catch(e => console.warn('announcements error', e));
+
+// Corporate actions
+fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => updateActionsList(data)).catch(e => console.warn('actions error', e));
+
+// Yahoo Finance chart
+fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
+    if (data.chart_data) renderPriceChart(data.chart_data);
+    document.getElementById('yfCurrentPrice').textContent = (data.current_price ?? '--') !== '--' ? `₹ ${data.current_price}` : '--';
+    window.originalCurrentPrice = document.getElementById('yfCurrentPrice').textContent;
+    document.getElementById('yfPE').textContent = data.pe_ratio ?? '--';
+    document.getElementById('yfHigh').textContent = data.fifty_two_week_high ?? '--';
+    document.getElementById('yfLow').textContent = data.fifty_two_week_low ?? '--';
+    document.getElementById('yfMarketCap').textContent = formatNumber(data.market_cap);
+    document.getElementById('yfVolume').textContent = formatNumber(data.volume);
+}).catch(e => console.warn('yfinance error', e));
+
+// AI summary: use OpenAI only (Ollama is not installed on EC2)
+fetch(`/company/${fincode}/openai-summary/`).then(r => r.json()).then(data => {
+    document.getElementById('aiOverview').innerHTML = data.summary;
+}).catch(e => {
+    console.warn('openai error', e);
+    document.getElementById('aiOverview').innerHTML = 'AI summary temporarily unavailable.';
+});
         // Show back arrow after successful company load
         if (backToEmptyBtn) backToEmptyBtn.style.display = 'inline-block';
         if (company && company.compname) searchInput.value = company.compname;
         if (searchInput.value.trim()) clearButton.style.display = 'block';
-        const failedCount = results.filter(r => r.status === 'rejected').length;
-        if (failedCount > 0) console.warn(`${failedCount} background API(s) failed`);
+       
     } catch(error) {
         dashboardContent.classList.remove('loading-blur');
         searchLoader.style.display = 'none';
