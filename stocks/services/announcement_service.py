@@ -1,6 +1,5 @@
 from ..database.db_connection import get_connection
-from .pdf_cache_service import get_or_create_pdf_cache
-
+# from .pdf_cache_service import get_or_create_pdf_cache   # PDF download disabled for now
 
 def get_company_announcements_data(fincode):
 
@@ -45,15 +44,14 @@ def get_company_announcements_data(fincode):
         caption = row[2]
         datetime_val = row[3]
 
-        # 🔥 NEW: Trigger PDF cache for announcements with attachments
-        if attachment_url:
-            import threading
-            print(f"Processing PDF for newsid: {newsid} (background)")
-            threading.Thread(
-                target=get_or_create_pdf_cache,
-                args=(newsid, scripcode, attachment_url),
-                daemon=True
-            ).start()
+        # PDF download disabled – prevents hanging requests
+        # if attachment_url:
+        #     import threading
+        #     threading.Thread(
+        #         target=get_or_create_pdf_cache,
+        #         args=(newsid, scripcode, attachment_url),
+        #         daemon=True
+        #     ).start()
 
         announcements.append({
             "newsid": newsid,

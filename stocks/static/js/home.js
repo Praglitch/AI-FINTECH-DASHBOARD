@@ -523,12 +523,21 @@ exampleCompanies.forEach(company => {
 // Ollama chip (friendly message)
 const ollamaChip = document.getElementById('ollamaChip');
 const openaiChip = document.getElementById('openaiChip');
+
 if (ollamaChip) {
-    ollamaChip.addEventListener('click', () => {
+    ollamaChip.addEventListener('click', async () => {
         if (!currentFincode) return;
         ollamaChip.classList.add('active');
         if (openaiChip) openaiChip.classList.remove('active');
-        document.getElementById('aiOverview').innerHTML = '<div class="loading-placeholder">Ollama is not installed on this server. Please use OpenAI.</div>';
+        document.getElementById('aiOverview').innerHTML = '<div class="loading-placeholder"><span class="spinner"></span><span>Loading Ollama analysis...</span></div>';
+        try {
+            const response = await fetch(`/company/${currentFincode}/ai-summary/`);
+            const data = await response.json();
+            document.getElementById('aiOverview').innerHTML = data.summary;
+        } catch (error) {
+            console.error('Ollama error:', error);
+            document.getElementById('aiOverview').innerHTML = 'Ollama is not installed or not responding. Please use OpenAI.';
+        }
     });
 }
 if (openaiChip) {

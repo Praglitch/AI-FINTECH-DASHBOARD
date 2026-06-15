@@ -118,7 +118,6 @@ def test_ollama(request):
     return JsonResponse({"response": data["response"]})
 
 
-# COMPANY AI SUMMARY - OLLAMA
 @login_required
 def company_ai_summary(request, fincode):
     company = get_company_details_data(fincode)
@@ -130,11 +129,8 @@ def company_ai_summary(request, fincode):
     Analyze this company.
 
     Company: {company}
-
     Financials: {financials}
-
     Shareholding: {shareholding}
-
     Market Snapshot: {market}
 
     Give:
@@ -146,12 +142,16 @@ def company_ai_summary(request, fincode):
     Keep response under 200 words.
     """
 
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={"model": "llama3.2", "prompt": prompt, "stream": False}
-    )
-    data = response.json()
-    return JsonResponse({"summary": data["response"]})
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={"model": "llama3.2", "prompt": prompt, "stream": False},
+            timeout=10   # prevent hanging
+        )
+        data = response.json()
+        return JsonResponse({"summary": data["response"]})
+    except Exception as e:
+        return JsonResponse({"summary": f"Ollama error: {str(e)}. Please use OpenAI."})
 
 
 # COMPANY AI SUMMARY - OPENAI

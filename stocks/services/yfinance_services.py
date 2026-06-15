@@ -9,7 +9,11 @@ def get_yfinance_data(fincode, period="1y", interval="1mo"):
     ticker = f"{symbol}.NS"
     stock = yf.Ticker(ticker)
     info = stock.info
-    history = stock.history(period=period, interval=interval)
+
+    try:
+        history = stock.history(period=period, interval=interval, timeout=10)
+    except Exception:
+        history = []
 
     chart_data = []
     for index, row in history.iterrows():
