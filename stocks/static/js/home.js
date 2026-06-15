@@ -101,8 +101,8 @@ function resetAITab() {
     const ollamaChip = document.getElementById('ollamaChip');
     const openaiChip = document.getElementById('openaiChip');
     if (ollamaChip && openaiChip) {
-        ollamaChip.classList.add('active');
-        openaiChip.classList.remove('active');
+        ollamaChip.classList.remove('active');
+        openaiChip.classList.add('active');
     }
 }
 
@@ -270,91 +270,104 @@ async function selectCompany(fincode) {
     searchLoader.style.display = 'block';
     clearButton.style.display = 'none';
     noResults.style.display = 'none';
+    
+    dashboardContent.style.display = 'block';
     dashboardContent.classList.add('active');
-    dashboardContent.classList.add('loading-blur');
     showLoadingPlaceholders();
+    
     document.getElementById('companyName').textContent = 'Loading...';
+    
     try {
-        // Load critical data first (company + market)
         const [company, market] = await Promise.all([
             fetch(`/company/${fincode}/`).then(r => r.json()),
             fetch(`/company-market/${fincode}/`).then(r => r.json())
         ]);
-        // Update header and market snapshot
-        document.getElementById('companyName').textContent = company.compname;
-        document.getElementById('companySymbol').textContent = company.symbol || 'N/A';
-        document.getElementById('companyIndustry').textContent = company.industry || 'N/A';
-        document.getElementById('companyStatus').textContent = company.status || 'N/A';
-        document.getElementById('companyISIN').textContent = company.isin || 'N/A';
-        document.getElementById('companyFincode').textContent = company.fincode;
-        document.getElementById('companyChairman').textContent = company.chairman || 'N/A';
-        document.getElementById('companyMD').textContent = company.mdir || 'N/A';
-        document.getElementById('companyCS').textContent = company.cosec || 'N/A';
-        document.getElementById('marketOpen').textContent = '₹ ' + (market.open || '--');
-        document.getElementById('marketHigh').textContent = '₹ ' + (market.high || '--');
-        document.getElementById('marketLow').textContent = '₹ ' + (market.low || '--');
-        document.getElementById('marketClose').textContent = '₹ ' + (market.close || '--');
-        document.getElementById('marketVolume').textContent = market.volume || '--';
-        document.getElementById('marketValue').textContent = '₹ ' + (market.value || '--');
+        
+        requestAnimationFrame(() => {
+            document.getElementById('companyName').textContent = company.compname;
+            document.getElementById('companySymbol').textContent = company.symbol || 'N/A';
+            document.getElementById('companyIndustry').textContent = company.industry || 'N/A';
+            document.getElementById('companyStatus').textContent = company.status || 'N/A';
+            document.getElementById('companyISIN').textContent = company.isin || 'N/A';
+            document.getElementById('companyFincode').textContent = company.fincode;
+            document.getElementById('companyChairman').textContent = company.chairman || 'N/A';
+            document.getElementById('companyMD').textContent = company.mdir || 'N/A';
+            document.getElementById('companyCS').textContent = company.cosec || 'N/A';
+            document.getElementById('marketOpen').textContent = '₹ ' + (market.open || '--');
+            document.getElementById('marketHigh').textContent = '₹ ' + (market.high || '--');
+            document.getElementById('marketLow').textContent = '₹ ' + (market.low || '--');
+            document.getElementById('marketClose').textContent = '₹ ' + (market.close || '--');
+            document.getElementById('marketVolume').textContent = market.volume || '--';
+            document.getElementById('marketValue').textContent = '₹ ' + (market.value || '--');
+        });
+        
         dashboardContent.classList.remove('loading-blur');
         searchLoader.style.display = 'none';
         if (backToEmptyBtn) backToEmptyBtn.style.display = 'inline-block';
         searchInput.value = company.compname;
         if (searchInput.value.trim()) clearButton.style.display = 'block';
-
-        // ---- Background data: load in parallel, update UI as each finishes ----
+        
         // Shareholding
         fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
-            document.getElementById('holdingPromoter').textContent = (data.promoter || '--') + '%';
-            document.getElementById('holdingPublic').textContent = (data.public || '--') + '%';
-            document.getElementById('holdingMutualFund').textContent = (data.mutual_fund || '--') + '%';
-            document.getElementById('holdingFPI').textContent = (data.fpi || '--') + '%';
-            document.getElementById('kpiPromoter').textContent = (data.promoter || '--') + '%';
-            document.getElementById('kpiPublic').textContent = (data.public || '--') + '%';
-            document.getElementById('kpiMutualFund').textContent = (data.mutual_fund || '--') + '%';
-            document.getElementById('kpiFII').textContent = (data.fpi || '--') + '%';
+            requestAnimationFrame(() => {
+                document.getElementById('holdingPromoter').textContent = (data.promoter || '--') + '%';
+                document.getElementById('holdingPublic').textContent = (data.public || '--') + '%';
+                document.getElementById('holdingMutualFund').textContent = (data.mutual_fund || '--') + '%';
+                document.getElementById('holdingFPI').textContent = (data.fpi || '--') + '%';
+                document.getElementById('kpiPromoter').textContent = (data.promoter || '--') + '%';
+                document.getElementById('kpiPublic').textContent = (data.public || '--') + '%';
+                document.getElementById('kpiMutualFund').textContent = (data.mutual_fund || '--') + '%';
+                document.getElementById('kpiFII').textContent = (data.fpi || '--') + '%';
+            });
         }).catch(e => console.warn('shareholding error', e));
-
+        
         // Financials
         fetch(`/company/${fincode}/financials/`).then(r => r.json()).then(data => {
-            document.getElementById('kpiRevenue').textContent = formatNumber(data.net_sales);
-            document.getElementById('kpiPAT').textContent = formatNumber(data.profit_after_tax);
-            document.getElementById('finYearEnd').textContent = data.year_end || '--';
-            document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(data.net_sales);
-            document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(data.operating_profit);
-            document.getElementById('finPAT').textContent = '₹ ' + formatNumber(data.profit_after_tax);
-            document.getElementById('finEPS').textContent = data.reported_eps || '--';
-            document.getElementById('finDividend').textContent = (data.dividend_perc || '--') + '%';
+            requestAnimationFrame(() => {
+                document.getElementById('kpiRevenue').textContent = formatNumber(data.net_sales);
+                document.getElementById('kpiPAT').textContent = formatNumber(data.profit_after_tax);
+                document.getElementById('finYearEnd').textContent = data.year_end || '--';
+                document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(data.net_sales);
+                document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(data.operating_profit);
+                document.getElementById('finPAT').textContent = '₹ ' + formatNumber(data.profit_after_tax);
+                document.getElementById('finEPS').textContent = data.reported_eps || '--';
+                document.getElementById('finDividend').textContent = (data.dividend_perc || '--') + '%';
+            });
         }).catch(e => console.warn('financials error', e));
-
+        
         // News
         fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => updateNewsList(data)).catch(e => console.warn('news error', e));
-
-        // Announcements (keep PDF download, but it's async anyway)
+        
+        // Announcements
         fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => updateAnnouncementsList(data)).catch(e => console.warn('announcements error', e));
-
+        
         // Corporate actions
         fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => updateActionsList(data)).catch(e => console.warn('actions error', e));
-
-        // Yahoo Finance chart
+        
+        // Yahoo Finance
         fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
-            if (data.chart_data) renderPriceChart(data.chart_data);
-            document.getElementById('yfCurrentPrice').textContent = (data.current_price ?? '--') !== '--' ? `₹ ${data.current_price}` : '--';
-            window.originalCurrentPrice = document.getElementById('yfCurrentPrice').textContent;
-            document.getElementById('yfPE').textContent = data.pe_ratio ?? '--';
-            document.getElementById('yfHigh').textContent = data.fifty_two_week_high ?? '--';
-            document.getElementById('yfLow').textContent = data.fifty_two_week_low ?? '--';
-            document.getElementById('yfMarketCap').textContent = formatNumber(data.market_cap);
-            document.getElementById('yfVolume').textContent = formatNumber(data.volume);
+            requestAnimationFrame(() => {
+                if (data.chart_data) renderPriceChart(data.chart_data);
+                document.getElementById('yfCurrentPrice').textContent = (data.current_price ?? '--') !== '--' ? `₹ ${data.current_price}` : '--';
+                window.originalCurrentPrice = document.getElementById('yfCurrentPrice').textContent;
+                document.getElementById('yfPE').textContent = data.pe_ratio ?? '--';
+                document.getElementById('yfHigh').textContent = data.fifty_two_week_high ?? '--';
+                document.getElementById('yfLow').textContent = data.fifty_two_week_low ?? '--';
+                document.getElementById('yfMarketCap').textContent = formatNumber(data.market_cap);
+                document.getElementById('yfVolume').textContent = formatNumber(data.volume);
+            });
         }).catch(e => console.warn('yfinance error', e));
-
-        // AI summary: use OpenAI (Ollama is not installed on EC2)
+        
+        // OpenAI summary (default)
         fetch(`/company/${fincode}/openai-summary/`).then(r => r.json()).then(data => {
-            document.getElementById('aiOverview').innerHTML = data.summary;
+            requestAnimationFrame(() => {
+                document.getElementById('aiOverview').innerHTML = data.summary;
+            });
         }).catch(e => {
             console.warn('openai error', e);
             document.getElementById('aiOverview').innerHTML = 'AI summary temporarily unavailable.';
         });
+        
     } catch(error) {
         dashboardContent.classList.remove('loading-blur');
         searchLoader.style.display = 'none';
@@ -364,31 +377,38 @@ async function selectCompany(fincode) {
     }
 }
 
+// ---------- UPDATE FUNCTIONS with requestAnimationFrame ----------
 function updateNewsList(news) {
-    const container = document.getElementById('newsList');
-    if (!news || !Array.isArray(news) || news.length === 0) {
-        container.innerHTML = '<div class="empty-state">No news available</div>';
-        return;
-    }
-    container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    requestAnimationFrame(() => {
+        const container = document.getElementById('newsList');
+        if (!news || !Array.isArray(news) || news.length === 0) {
+            container.innerHTML = '<div class="empty-state">No news available</div>';
+            return;
+        }
+        container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    });
 }
 
 function updateAnnouncementsList(announcements) {
-    const container = document.getElementById('announcementsList');
-    if (!announcements || !Array.isArray(announcements) || announcements.length === 0) {
-        container.innerHTML = '<div class="empty-state">No announcements available</div>';
-        return;
-    }
-    container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+    requestAnimationFrame(() => {
+        const container = document.getElementById('announcementsList');
+        if (!announcements || !Array.isArray(announcements) || announcements.length === 0) {
+            container.innerHTML = '<div class="empty-state">No announcements available</div>';
+            return;
+        }
+        container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+    });
 }
 
 function updateActionsList(actions) {
-    const container = document.getElementById('actionsList');
-    if (!actions || !actions.actions || !Array.isArray(actions.actions) || actions.actions.length === 0) {
-        container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
-        return;
-    }
-    container.innerHTML = actions.actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    requestAnimationFrame(() => {
+        const container = document.getElementById('actionsList');
+        if (!actions || !actions.actions || !Array.isArray(actions.actions) || actions.actions.length === 0) {
+            container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
+            return;
+        }
+        container.innerHTML = actions.actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    });
 }
 
 function escapeHtml(str) {
@@ -525,7 +545,6 @@ exampleCompanies.forEach(company => {
     });
 });
 
-// Ollama chip: show friendly message instead of making failing request
 const ollamaChip = document.getElementById('ollamaChip');
 const openaiChip = document.getElementById('openaiChip');
 if (ollamaChip) {
