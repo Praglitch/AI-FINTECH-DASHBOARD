@@ -1,98 +1,69 @@
 # System Architecture
 
-## High-Level Architecture
+## High‑Level Overview
 
-User
-↓
-Frontend (HTML + JavaScript)
-↓
-Django APIs (views.py)
-↓
-PostgreSQL Database
-↓
-JSON Response
-↓
-Frontend Rendering
 
----
+User → Browser (HTML/JS) → Django (REST APIs) → PostgreSQL (2 DBs) → External Accord DB
 
-## AI Architecture
 
-User
-↓
-AI Summary Request
-↓
-company_ai_summary()
-↓
-company_details()
-company_financials()
-company_shareholding()
-company_market()
-↓
-Prompt Construction
-↓
-Ollama REST API
-↓
-Llama 3.2
-↓
-Generated Summary
-↓
-JSON Response
-↓
-Frontend
+- **Frontend**: HTML/CSS/JS (Chart.js, vanilla JS)
+- **Backend**: Django 6.0.5, Gunicorn (WSGI)
+- **Databases**:
+  - **Django DB (fintech_ai)**: user auth, PDF cache (`AnnouncementPdfCache`), chunks (`AnnouncementChunk`).
+  - **Accord DB**: company_master, financials, shareholding, announcements, news, corporate actions, insider trading, bulk/block deals.
+- **AI Integration**:
+  - Intent detection (keyword‑based, 6 intents) → multi‑intent union.
+  - Context building from multiple sources (financials, market, news, PDF chunks).
+  - LLM: OpenAI GPT‑4o‑mini (chat, summaries) and Ollama Llama 3.2 (local summaries).
 
----
+## Data Flow
 
-## Backend Components
+### Company Search & Dashboard
+1. User searches → `search_companies()` → Accord DB → frontend dropdown.
+2. Select company → `selectCompany()` fetches critical data (company + market) first, then background‑loads other APIs.
+3. Dashboard renders KPI cards, market snapshot, shareholding, financials, news, announcements.
+4. Chart loads OHLC data from Yahoo Finance (or CSV fallback).
 
-### Authentication
+### PDF Ingestion (RAG)
+1. `get_company_announcements_data()` fetches latest announcements.
+2. For each announcement with PDF attachment → `get_or_create_pdf_cache()`.
+3. Downloads PDF, extracts text (PyMuPDF), stores full text in `AnnouncementPdfCache`.
+4. `create_chunks_for_pdf()` splits text into overlapping chunks (1000 char, overlap 200) and stores in `AnnouncementChunk`.
 
-* login_page()
-* Django Authentication System
+### AI Chat (RAG)
+1. User asks question → `company_chat()`.
+2. `build_context()`:
+   - Detects all matching intents (multi‑intent).
+   - Collects source keys (e.g., financials, shareholding, announcement_pdf_chunks).
+   - Fetches data from services (including PDF chunks via keyword search).
+3. Constructs prompt with context and conversation history.
+4. Calls OpenAI GPT‑4o‑mini (or Ollama).
+5. Returns formatted markdown answer to frontend.
 
-### Company Data APIs
+## Component Diagram
 
-* search_companies()
-* company_details()
+```mermaid
+graph TD
+    A[Frontend] -->|HTTP| B[Django Views]
+    B --> C[Services]
+    C --> D[Accord DB]
+    C --> E[Django DB]
+    C --> F[External APIs: yfinance, pyzdata]
+    B --> G[OpenAI API / Ollama]
+    G --> B
+    E --> H[PDF Cache & Chunks]
+    H --> C
 
-### Market & Financial APIs
+Security
+@login_required on all sensitive endpoints.
 
-* company_financials()
-* company_market()
+CSRF protection enabled (except company_chat uses @csrf_exempt – for production, send CSRF token from frontend).
 
-### Corporate Information APIs
+Environment variables for secrets.
 
-* company_shareholding()
-* company_corporate_actions()
-* company_announcements()
+Future
+pgvector for semantic search.
 
-### News APIs
+Cross‑company comparison.
 
-* company_news()
-
-### AI APIs
-
-* test_ollama()
-* company_ai_summary()
-
----
-
-## Database Layer
-
-Database: PostgreSQL
-
-Connection Manager:
-
-* db_connection.py
-
-Connection Flow:
-
-Django API
-↓
-get_connection()
-↓
-PostgreSQL
-↓
-Query Execution
-↓
-JSON Response
+Deployment to AWS with RDS, EC2, Nginx, Gunicorn.

@@ -1,13 +1,12 @@
 import json
-from urllib import response
-from xmlrpc import client
 import requests
 import os
 from openai import OpenAI
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .services.company_service import (
     search_company_data,
     get_company_details_data
@@ -19,214 +18,109 @@ from .services.shareholding_service import get_company_shareholding_data
 from .services.announcement_service import get_company_announcements_data
 from .services.corporate_actions_service import get_company_corporate_actions_data
 from .services.yfinance_services import get_yfinance_data
-from django.views.decorators.csrf import csrf_exempt
 from .services.ai_retrieval_service import build_context
-from django.contrib.auth import logout
-from django.shortcuts import redirect
-from django.shortcuts import render
 
 
-
-#LOGIN PAGE
+# LOGIN PAGE
 def login_page(request):
-
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-
-        user = authenticate(
-            request,
-            username=username,
-            password=password
-        )
-
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
             return redirect("home")
-
-        return render(
-            request,
-            "login.html",
-            {"error": "Invalid username or password"}
-        )
-
+        return render(request, "login.html", {"error": "Invalid username or password"})
     return render(request, "login.html")
 
 
-#HOME PAGE
+# HOME PAGE
 @login_required
 def home(request):
     return render(request, "home.html")
 
 
-
-
-
-
-#SEARCH COMPANY
+# SEARCH COMPANY
 @login_required
 def search_companies(request):
-
     query = request.GET.get("q", "")
-
     data = search_company_data(query)
-
     return JsonResponse(data, safe=False)
 
 
-
-
-
-#COMPANY DETAILS
+# COMPANY DETAILS
 @login_required
 def company_details(request, fincode):
-
     data = get_company_details_data(fincode)
-
     if not data:
-        return JsonResponse(
-            {"error": "Company not found"},
-            status=404
-        )
-
+        return JsonResponse({"error": "Company not found"}, status=404)
     return JsonResponse(data)
-    
-    
-    
-    
-#COMPANY NEWS
+
+
+# COMPANY NEWS
 @login_required
 def company_news(request, fincode):
-
     news = get_company_news_data(fincode)
-
     return JsonResponse(news, safe=False)
 
 
-
-
-
-#COMPANY FINANCIALS
+# COMPANY FINANCIALS
 @login_required
 def company_financials(request, fincode):
-
     data = get_company_financials_data(fincode)
-
     if not data:
-        return JsonResponse(
-            {"error": "Financials not found"},
-            status=404
-        )
-
+        return JsonResponse({"error": "Financials not found"}, status=404)
     return JsonResponse(data)
-    
-    
-    
-    
-    
-    
-    
-#COMPANY ANNOUNCEMENTS
+
+
+# COMPANY ANNOUNCEMENTS
 @login_required
 def company_announcements(request, fincode):
-
     announcements = get_company_announcements_data(fincode)
-
     if announcements is None:
-        return JsonResponse(
-            {"error": "Company not found"},
-            status=404
-        )
-
-    return JsonResponse(
-        announcements,
-        safe=False
-    )
+        return JsonResponse({"error": "Company not found"}, status=404)
+    return JsonResponse(announcements, safe=False)
 
 
-
-
-
-#COMPANY MARKET SNAPSHOT
+# COMPANY MARKET SNAPSHOT
 @login_required
 def company_market(request, fincode):
-
     data = get_company_market_data(fincode)
-
     if not data:
-        return JsonResponse(
-            {"error": "Market data not found"},
-            status=404
-        )
-
+        return JsonResponse({"error": "Market data not found"}, status=404)
     return JsonResponse(data)
 
 
-
-
-
-
-#COMPANY SHAREHOLDING
+# COMPANY SHAREHOLDING
 @login_required
 def company_shareholding(request, fincode):
-
     data = get_company_shareholding_data(fincode)
-
     if not data:
-        return JsonResponse(
-            {"error": "Shareholding data not found"},
-            status=404
-        )
-
+        return JsonResponse({"error": "Shareholding data not found"}, status=404)
     return JsonResponse(data)
-    
-    
-    
-    
-    
 
-#COMPANY CORPORATE ACTIONS
+
+# COMPANY CORPORATE ACTIONS
 @login_required
 def company_corporate_actions(request, fincode):
-
     actions = get_company_corporate_actions_data(fincode)
+    return JsonResponse({"actions": actions})
 
-    return JsonResponse({
-        "actions": actions
-    })
- 
- 
- 
- 
- 
- 
- 
- 
- # TEMPORARY TEST ENDPOINT   
+
+# TEMPORARY TEST ENDPOINT
 @login_required
 def test_ollama(request):
-
     response = requests.post(
         "http://localhost:11434/api/generate",
-        json={
-            "model": "llama3.2",
-            "prompt": "Say hello in one sentence.",
-            "stream": False
-        }
+        json={"model": "llama3.2", "prompt": "Say hello in one sentence.", "stream": False}
     )
-
     data = response.json()
+    return JsonResponse({"response": data["response"]})
 
-    return JsonResponse({
-        "response": data["response"]
-    })
-    
-    
- 
-#COMPANY AI SUMMARY - OLLAMA
+
+# COMPANY AI SUMMARY - OLLAMA
 @login_required
 def company_ai_summary(request, fincode):
-
     company = get_company_details_data(fincode)
     financials = get_company_financials_data(fincode)
     shareholding = get_company_shareholding_data(fincode)
@@ -254,25 +148,15 @@ def company_ai_summary(request, fincode):
 
     response = requests.post(
         "http://localhost:11434/api/generate",
-        json={
-            "model": "llama3.2",
-            "prompt": prompt,
-            "stream": False
-        }
+        json={"model": "llama3.2", "prompt": prompt, "stream": False}
     )
-
     data = response.json()
+    return JsonResponse({"summary": data["response"]})
 
-    return JsonResponse({
-        "summary": data["response"]
-    })
-    
-    
-    
-#COMPANY AI SUMMARY - OPENAI
+
+# COMPANY AI SUMMARY - OPENAI
 @login_required
 def company_openai_summary(request, fincode):
-
     company = get_company_details_data(fincode)
     financials = get_company_financials_data(fincode)
     shareholding = get_company_shareholding_data(fincode)
@@ -293,29 +177,15 @@ def company_openai_summary(request, fincode):
     4. Investor Takeaway
     """
 
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
-
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     response = client.chat.completions.create(
-        model="gpt-4o-mini",   # Correct model name
-        messages=[
-            {
-                "role":"user",
-                "content":prompt
-            }
-        ]
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
     )
+    return JsonResponse({"summary": response.choices[0].message.content})
 
-    return JsonResponse({
-        "summary":
-        response.choices[0].message.content
-    })
-    
-   
-   
+
+# RAG COMPANY CHAT
 @login_required
 @csrf_exempt
 def company_chat(request, fincode):
@@ -376,10 +246,9 @@ You are an Indian stock market analyst.
         temperature=0.3
     )
     return JsonResponse({"answer": response.choices[0].message.content})
-    
-    
-    
-    
+
+
+# YAHOO FINANCE DATA
 @login_required
 def company_yfinance(request, fincode):
     period = request.GET.get("period", "1y")
@@ -388,11 +257,13 @@ def company_yfinance(request, fincode):
     return JsonResponse(data)
 
 
-
+# LOGOUT
 def logout_view(request):
     logout(request)
     return redirect('login')
 
+
+# HELP PAGE
 @login_required
 def help_page(request):
-    return render(request, 'help.html')   # create an empty help.html template
+    return render(request, 'help.html')

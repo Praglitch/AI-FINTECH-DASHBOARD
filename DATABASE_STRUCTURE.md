@@ -1,147 +1,60 @@
 # Database Structure
 
-Database: PostgreSQL
+## Django Internal Database (fintech_ai)
 
-Connection File:
-stocks/db_connection.py
+### `stocks_announcementpdfcache`
+- `id` (PK)
+- `newsid` (unique) – BSE announcement ID
+- `scripcode` – BSE security code
+- `attachment_url` – PDF link
+- `pdf_text` – full extracted text
+- `processed` – boolean flag
+- `created_at`, `updated_at`
 
----
+Indexes: `scripcode`, `newsid`
 
-## company_master
+### `stocks_announcementchunk`
+- `id` (PK)
+- `pdf_id` (FK to announcementpdfcache)
+- `chunk_index` – order in PDF
+- `chunk_text` – text snippet
+- `created_at`
 
-Purpose:
-Stores master company information.
+Indexes: (`pdf_id`, `chunk_index`) for fast retrieval.
 
-Important Columns:
+## External Accord Database (provided by company)
 
-* fincode
-* compname
-* symbol
-* s_name
-* industry
-* house
-* chairman
-* mdir
-* cosec
-* status
-* isin
-* scripcode
+### `company_master`
+- `fincode` (PK)
+- `compname`, `s_name`, `symbol`, `industry`, `house`
+- `chairman`, `mdir`, `cosec`, `status`, `isin`
+- `scripcode`
 
-Used By:
+### `finance_cons_pl`
+- `fincode`
+- `year_end`, `net_sales`, `operating_profit`, `profit_after_tax`, `reported_eps`, `dividend_perc`
 
-* search_companies()
-* company_details()
-* company_announcements()
+### `monthlyprice`
+- `fincode`
+- `open`, `high`, `low`, `close`, `volume`, `value`, `month`, `year`
 
----
+### `shpsummary`
+- `fincode`
+- `date_end`, `tpftotalpromoter`, `tptotalpublic`, `tpinmfuti`, `tpinforeignportinv`
 
-## finance_cons_pl
+### `bse_announcements`
+- `newsid`, `scripcode`, `attachmenturl`, `caption`, `datetime`
 
-Purpose:
-Stores company financial information.
+### `news_master`
+- `fincode`, `heading`, `date`
 
-Important Columns:
+### `corporate_actions_data`
+- `fincode`, `sdate`, `details`, `amount`, `ratio1`
 
-* year_end
-* net_sales
-* operating_profit
-* profit_after_tax
-* reported_eps
-* dividend_perc
+### `insider_trading`, `bse_bulk_deals`, `bse_block_deals`, `board_of_directors`
+- All filtered by `fincode`.
 
-Used By:
+## Relationships
 
-* company_financials()
-
----
-
-## monthlyprice
-
-Purpose:
-Stores latest market price information.
-
-Important Columns:
-
-* open
-* high
-* low
-* close
-* volume
-* value
-* month
-* year
-
-Used By:
-
-* company_market()
-
----
-
-## shpsummary
-
-Purpose:
-Stores shareholding pattern.
-
-Important Columns:
-
-* date_end
-* tpftotalpromoter
-* tptotalpublic
-* tpinmfuti
-* tpinforeignportinv
-
-Used By:
-
-* company_shareholding()
-
----
-
-## corporate_actions_data
-
-Purpose:
-Stores corporate actions.
-
-Important Columns:
-
-* sdate
-* details
-* amount
-* ratio1
-
-Used By:
-
-* company_corporate_actions()
-
----
-
-## bse_announcements
-
-Purpose:
-Stores company announcements.
-
-Important Columns:
-
-* caption
-* datetime
-* scripcode
-
-Used By:
-
-* company_announcements()
-
----
-
-## news_master
-
-Purpose:
-Stores company news.
-
-Important Columns:
-
-* heading
-* date
-* fincode
-
-Used By:
-
-* company_news()
+- `fincode` links Django DB tables to Accord DB (via `scripcode` conversion in services).
+- `newsid` ensures PDFs are downloaded only once.

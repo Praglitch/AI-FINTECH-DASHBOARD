@@ -1,154 +1,40 @@
 # Project Flow
 
-## Company Search
+## User Authentication
 
-User
-↓
-Search Box
-↓
-search_companies()
-↓
-company_master
-↓
-JSON Response
-↓
-Dropdown Suggestions
+1. User visits `/` → login page.
+2. Enters credentials → Django authenticates.
+3. On success → redirect to `/home/`.
 
----
+## Empty Search State
 
-## Company Details
+- User sees search bar and example chips.
+- Typing triggers `performSearch()` → fetches matching companies from Accord DB → displays dropdown.
 
-User
-↓
-Company Selection
-↓
-company_details()
-↓
-company_master
-↓
-JSON Response
-↓
-Company Information Card
+## Company Selection
 
----
+- Click on a company → `selectCompany(fincode)`.
+- Critical data (company details + market snapshot) fetched first → dashboard appears with loading skeletons.
+- Remaining data (shareholding, financials, news, announcements, AI summary, chart) fetched in background.
+- Chart loads from Yahoo Finance (or CSV cache).
+- PDFs from announcements are downloaded and chunked automatically.
 
-## Financial Data
+## AI Analysis Tab
 
-User
-↓
-Financial Section
-↓
-company_financials()
-↓
-finance_cons_pl
-↓
-JSON Response
-↓
-Financial Card
+- User can toggle between Ollama and OpenAI summaries.
+- In the chat panel, user types a question → sent to `company_chat`.
+- Backend builds context (multi‑intent, including PDF chunks) and prompts GPT‑4o‑mini.
+- Answer returned in markdown, displayed with action buttons (copy, regenerate, like, dislike).
+- Suggested prompt chips insert predefined questions.
 
----
+## Settings & Navigation
 
-## Market Snapshot
+- Back arrow (←) appears when a company is loaded; clicking clears selection and returns to empty state.
+- Settings gear (⚙️) toggles dropdown with Help (static page) and Logout (logs out to login page).
 
-User
-↓
-Market Section
-↓
-company_market()
-↓
-monthlyprice
-↓
-JSON Response
-↓
-Market Card
+## Data Flow Summary
 
----
-
-## Shareholding Pattern
-
-User
-↓
-Shareholding Section
-↓
-company_shareholding()
-↓
-shpsummary
-↓
-JSON Response
-↓
-Shareholding Card
-
----
-
-## Corporate Actions
-
-User
-↓
-Corporate Actions Section
-↓
-company_corporate_actions()
-↓
-corporate_actions_data
-↓
-JSON Response
-↓
-Corporate Actions Card
-
----
-
-## Announcements
-
-User
-↓
-Announcements Section
-↓
-company_announcements()
-↓
-company_master
-↓
-bse_announcements
-↓
-JSON Response
-↓
-Announcements Card
-
----
-
-## News
-
-User
-↓
-News Section
-↓
-company_news()
-↓
-news_master
-↓
-JSON Response
-↓
-News Card
-
----
-
-## AI Summary
-
-User
-↓
-AI Summary Button
-↓
-company_ai_summary()
-↓
-Company API
-Financial API
-Shareholding API
-Market API
-↓
-Prompt Construction
-↓
-Ollama API
-↓
-Llama 3.2
-↓
-Generated Summary
-↓
-Frontend
+- **Search**: Frontend → `search_companies` → Accord DB → dropdown.
+- **Dashboard**: Frontend → multiple API endpoints → Accord DB + Django DB + yfinance → render.
+- **PDFs**: Announcements → `announcement_service` → `pdf_cache_service` → download → chunk → store in Django DB.
+- **Chat**: User question → `company_chat` → `build_context` → intent detection → gather sources (including PDF chunks) → LLM → answer.

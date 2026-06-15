@@ -1,144 +1,83 @@
+
+---
+
+## 📡 Updated `API_DOCUMENTATION.md`
+
+```markdown
 # API Documentation
 
-## Authentication APIs
+## Authentication
 
-### login_page()
+### `login_page()`
+- **Method**: POST
+- **Purpose**: Authenticate user and start session.
 
-Method:
-POST
+### `logout_view()`
+- **Method**: GET
+- **Purpose**: Log out user and redirect to login page.
 
-Purpose:
-Authenticate user and create session.
+## Company Data
 
----
+### `search_companies()`
+- **Method**: GET
+- **Query param**: `q` (string)
+- **Response**: List of `{compname, symbol, fincode}`
 
-## Company APIs
+### `company_details(fincode)`
+- **Method**: GET
+- **Response**: Company profile (name, symbol, industry, chairman, etc.)
 
-### search_companies()
+### `company_financials(fincode)`
+- **Method**: GET
+- **Response**: Latest financials (year_end, net_sales, operating_profit, PAT, EPS, dividend_perc)
 
-Method:
-GET
+### `company_market(fincode)`
+- **Method**: GET
+- **Response**: Latest market snapshot (open, high, low, close, volume, value)
 
-Purpose:
-Search companies using company name, symbol, or fincode.
+### `company_shareholding(fincode)`
+- **Method**: GET
+- **Response**: Latest shareholding pattern (promoter, public, mutual_fund, fpi)
 
-Database:
-company_master
+### `company_news(fincode)`
+- **Method**: GET
+- **Response**: List of latest news (heading, date)
 
-Response:
-JSON List
+### `company_announcements(fincode)`
+- **Method**: GET
+- **Response**: List of latest announcements (caption, datetime). Also triggers PDF download for attached PDFs.
 
----
+### `company_corporate_actions(fincode)`
+- **Method**: GET
+- **Response**: List of corporate actions (date, details, amount, ratio)
 
-### company_details(fincode)
-
-Method:
-GET
-
-Purpose:
-Fetch company profile information.
-
-Database:
-company_master
-
-Response:
-JSON Object
-
----
-
-## Financial APIs
-
-### company_financials(fincode)
-
-Database:
-finance_cons_pl
-
-Purpose:
-Fetch latest financial information.
-
----
-
-## Market APIs
-
-### company_market(fincode)
-
-Database:
-monthlyprice
-
-Purpose:
-Fetch latest market snapshot.
-
----
-
-## Shareholding APIs
-
-### company_shareholding(fincode)
-
-Database:
-shpsummary
-
-Purpose:
-Fetch latest shareholding pattern.
-
----
-
-## Corporate APIs
-
-### company_corporate_actions(fincode)
-
-Database:
-corporate_actions_data
-
-Purpose:
-Fetch latest corporate actions.
-
----
-
-### company_announcements(fincode)
-
-Databases:
-company_master
-bse_announcements
-
-Purpose:
-Fetch latest company announcements.
-
----
-
-## News APIs
-
-### company_news(fincode)
-
-Database:
-news_master
-
-Purpose:
-Fetch latest company news.
-
----
+### `company_yfinance(fincode)`
+- **Method**: GET
+- **Query params**: `period`, `interval` (default: `1y`, `1mo`)
+- **Response**: OHLC data for chart and current price, PE, market cap, etc.
 
 ## AI APIs
 
-### test_ollama()
+### `test_ollama()`
+- **Method**: GET
+- **Purpose**: Test Ollama connectivity.
 
-Purpose:
-Test Ollama connectivity.
+### `company_ai_summary(fincode)`
+- **Method**: GET
+- **Response**: AI‑generated company summary using Ollama (Llama 3.2).
 
----
+### `company_openai_summary(fincode)`
+- **Method**: GET
+- **Response**: AI‑generated company summary using OpenAI GPT‑4o‑mini.
 
-### company_ai_summary(fincode)
+### `company_chat(fincode)`
+- **Method**: POST
+- **Body**: `{ "question": "string", "history": [...] }`
+- **Response**: `{ "answer": "string" }`
+- **Purpose**: RAG chat with conversation memory.
 
-Purpose:
-Generate AI-powered company summary.
+## Utility
 
-Dependencies:
-
-* company_details()
-* company_financials()
-* company_shareholding()
-* company_market()
-
-External Service:
-
-* Ollama
-* Llama 3.2
+### `help_page()`
+- **Method**: GET
+- **Purpose**: Display help documentation (static placeholder).
