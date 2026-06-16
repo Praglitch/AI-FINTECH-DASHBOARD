@@ -1,62 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 {% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help - FinResearch</title>
+    <title>Help - StockAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <style>
+        body {
+            background: #0b141c;
+            color: #dae3ee;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-header {
+            backdrop-filter: blur(12px);
+            background: rgba(11,20,28,0.7);
+        }
+    </style>
 </head>
-<body>
-    <div class="app-container">
-        <header class="header-sticky">
-            <div class="header-left">
-                <a href="/home/" class="back-arrow-btn" style="text-decoration: none;">←</a>
-                <div class="search-wrapper" style="opacity: 0.5; pointer-events: none;">
-                    <input type="text" class="search-input" placeholder="Search disabled on help page" disabled>
-                </div>
+<body class="min-h-screen flex flex-col">
+    <header class="flex justify-between items-center px-6 w-full sticky top-0 z-50 glass-header border-b border-outline-variant h-[56px]">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">query_stats</span>
+            <span class="font-h1 text-h1 text-on-surface">StockAI</span>
+        </div>
+        <a href="/home/" class="text-on-surface-variant hover:text-primary transition">← Back to Dashboard</a>
+    </header>
+    <main class="flex-1 p-6 max-w-4xl mx-auto w-full">
+        <h1 class="font-display text-display text-on-surface">Help & Support</h1>
+        <p class="text-on-surface-variant mt-2">Welcome to the AI Financial Research Dashboard.</p>
+        <div class="mt-8 space-y-6">
+            <div class="bg-surface-container border border-outline-variant rounded-xl p-6">
+                <h2 class="font-h2 text-h2 text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">search</span> Search</h2>
+                <p class="text-on-surface-variant">Search for any Indian listed company by name, symbol, or fincode. Recent searches appear below the search bar.</p>
             </div>
-            <div class="settings-wrapper">
-                <button id="settingsBtn" class="settings-btn">⚙️</button>
-                <div id="settingsDropdown" class="settings-dropdown" style="display: none;">
-                    <button id="helpBtn" class="dropdown-item">Help</button>
-                    <button id="logoutDropdownBtn" class="dropdown-item logout-item">Logout</button>
-                </div>
+            <div class="bg-surface-container border border-outline-variant rounded-xl p-6">
+                <h2 class="font-h2 text-h2 text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-secondary">bar_chart</span> Financial Data</h2>
+                <p class="text-on-surface-variant">View financials, shareholding, market snapshot, news, announcements, and corporate actions for the selected company.</p>
             </div>
-        </header>
-        <main class="main-content" style="max-width: 800px; margin: 40px auto; padding: 20px;">
-            <h1>Help & Support</h1>
-            <p>Welcome to the AI Financial Research Dashboard.</p>
-            <h3>Features</h3>
-            <ul>
-                <li>Search for any Indian listed company by name, symbol, or fincode.</li>
-                <li>View financials, shareholding, market snapshot, news, announcements.</li>
-                <li>Ask the AI Copilot questions about the company.</li>
-                <li>Interactive OHLC chart with period/interval selection.</li>
-                <li>PDF ingestion from BSE announcements (chunked and searchable).</li>
-            </ul>
-            <p><a href="/home/">← Back to Dashboard</a></p>
-        </main>
-    </div>
-    <script>
-        // Settings dropdown (same as home.js)
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsDropdown = document.getElementById('settingsDropdown');
-        const logoutBtn = document.getElementById('logoutDropdownBtn');
-        if (settingsBtn && settingsDropdown) {
-            settingsBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                settingsDropdown.style.display = settingsDropdown.style.display === 'block' ? 'none' : 'block';
-            });
-            document.addEventListener('click', () => {
-                settingsDropdown.style.display = 'none';
-            });
-        }
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                window.location.href = '/logout/';
-            });
-        }
-    </script>
+            <div class="bg-surface-container border border-outline-variant rounded-xl p-6">
+                <h2 class="font-h2 text-h2 text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">auto_awesome</span> AI Copilot</h2>
+                <p class="text-on-surface-variant">Ask the AI Research Copilot questions about the company. It uses RAG (Retrieval-Augmented Generation) to answer from financial documents and announcements.</p>
+            </div>
+            <div class="bg-surface-container border border-outline-variant rounded-xl p-6">
+                <h2 class="font-h2 text-h2 text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">chart_data</span> Charts</h2>
+                <p class="text-on-surface-variant">Interactive OHLC chart with period/interval selection. Hover to see exact prices and dates.</p>
+            </div>
+        </div>
+    </main>
 </body>
 </html>

@@ -1,201 +1,435 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 {% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Fintech Dashboard</title>
+    <title>StockAI - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#313a43",
+                        "surface-container-highest": "#2d363e",
+                        "secondary": "#d5bbff",
+                        "background": "#0b141c",
+                        "on-background": "#dae3ee",
+                        "inverse-surface": "#dae3ee",
+                        "surface-tint": "#acc7ff",
+                        "on-error": "#690005",
+                        "primary-fixed": "#d7e2ff",
+                        "outline": "#8b909f",
+                        "on-secondary": "#41008b",
+                        "on-secondary-fixed-variant": "#5a21ab",
+                        "on-tertiary": "#00390c",
+                        "on-primary-fixed-variant": "#004492",
+                        "outline-variant": "#414754",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#4be260",
+                        "primary-fixed-dim": "#acc7ff",
+                        "tertiary-fixed": "#6fff7b",
+                        "on-surface-variant": "#c1c6d6",
+                        "on-surface": "#dae3ee",
+                        "surface-container-high": "#222b33",
+                        "secondary-container": "#5a21ab",
+                        "on-primary": "#002f68",
+                        "surface-variant": "#2d363e",
+                        "on-primary-fixed": "#001a40",
+                        "inverse-primary": "#005bbf",
+                        "surface-container": "#182028",
+                        "on-tertiary-fixed": "#002205",
+                        "on-primary-container": "#00285b",
+                        "secondary-fixed": "#ecdcff",
+                        "secondary-fixed-dim": "#d5bbff",
+                        "inverse-on-surface": "#29313a",
+                        "tertiary-container": "#00a836",
+                        "on-tertiary-container": "#00320a",
+                        "tertiary": "#4be260",
+                        "primary-container": "#498fff",
+                        "on-secondary-container": "#c6a5ff",
+                        "surface": "#0b141c",
+                        "primary": "#acc7ff",
+                        "surface-container-low": "#141c24",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#060f16",
+                        "surface-dim": "#0b141c",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#270058"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "6": "24px",
+                        "12": "48px",
+                        "4": "16px",
+                        "8": "32px",
+                        "3": "12px",
+                        "16": "64px",
+                        "2": "8px",
+                        "5": "20px",
+                        "1": "4px"
+                    },
+                    fontFamily: {
+                        "body": ["Inter"],
+                        "h2": ["Inter"],
+                        "label": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "display": ["Inter"],
+                        "caption": ["Inter"],
+                        "data-md": ["JetBrains Mono"],
+                        "data-lg": ["JetBrains Mono"],
+                        "h1": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "body": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "h2": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "data-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "display": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "caption": ["11px", {"lineHeight": "14px", "fontWeight": "400"}],
+                        "data-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "data-lg": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "h1": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-lg": ["15px", {"lineHeight": "22px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #414754; border-radius: 10px; }
+        .glass-header { backdrop-filter: blur(12px); background: rgba(11,20,28,0.7); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .search-results { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: #182028; border: 1px solid #414754; border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 50; display: none; }
+        .search-results.visible { display: block; }
+        .search-result-item { padding: 10px 16px; cursor: pointer; transition: background 0.15s; }
+        .search-result-item:hover { background: #222b33; }
+        .search-result-name { font-weight: 600; }
+        .search-result-meta { color: #8b909f; font-size: 12px; }
+        .error-toast { position: fixed; top: 20px; right: 20px; background: #dc2626; color: white; padding: 12px 16px; border-radius: 8px; z-index: 9999; display: none; }
+        .settings-dropdown { position: absolute; top: 100%; right: 0; background: #182028; border: 1px solid #414754; border-radius: 8px; min-width: 120px; z-index: 50; display: none; }
+        .settings-dropdown.open { display: block; }
+        .dropdown-item { display: block; padding: 10px 16px; color: #dae3ee; cursor: pointer; transition: background 0.15s; }
+        .dropdown-item:hover { background: #222b33; }
+        .skeleton { background: linear-gradient(90deg, #1a202c 25%, #2d363e 50%, #1a202c 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; height: 24px; width: 80%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .loading-placeholder { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 14px; }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #3b82f6; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .search-loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid #acc7ff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+        .clear-search { display: none; cursor: pointer; color: #8b909f; }
+        .clear-search.visible { display: block; }
+        .ai-chip.active { background: #7c3aed; color: white; }
+        .hidden { display: none; }
+        .chat-welcome p { color: #cbd5e1; }
+        .message-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+        .user-message .message-bubble { background: #3b82f6; color: white; border-bottom-right-radius: 4px; }
+        .bot-message .message-bubble { background: #1a202c; color: #dae3ee; border-bottom-left-radius: 4px; border: 1px solid #414754; }
+        .message-time { font-size: 10px; color: #64748b; margin-top: 4px; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.6; transition: opacity 0.2s; padding: 2px 4px; border-radius: 4px; }
+        .action-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+        .chat-message { margin-bottom: 16px; display: flex; flex-direction: column; }
+        .user-message { align-items: flex-end; }
+        .bot-message { align-items: flex-start; }
+        .message-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-left: 12px; margin-right: 12px; }
+        .ai-scroll { max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+        /* Typing indicator */
+        .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: #1a202c; border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; border: 1px solid #414754; }
+        .typing-indicator span { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; animation: typing 1.4s infinite ease-in-out; }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-10px); opacity: 1; } }
+        .chat-welcome { margin-bottom: 16px; }
+    </style>
 </head>
-<body>
+<body class="bg-background text-on-surface font-body min-h-screen">
+
     <div id="errorToast" class="error-toast">Something went wrong</div>
 
-    <div class="app-container">
-        <header class="header-sticky">
-            <div class="header-left">
-                <button id="backToEmptyBtn" class="back-arrow-btn" title="Back to search">←</button>
-                <div class="search-wrapper">
-                    <input type="text" id="companySearch" class="search-input" placeholder="Search company, symbol, or fincode..." autocomplete="off" autofocus>
-                    <div id="searchLoader" class="search-loader"></div>
-                    <button id="clearSearch" class="clear-search">✕</button>
+    <!-- Header -->
+    <header class="flex justify-between items-center px-6 w-full sticky top-0 z-50 glass-header border-b border-outline-variant h-[56px]">
+        <div class="flex items-center gap-6 flex-1">
+            <span class="font-h1 text-h1 text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">query_stats</span>
+                StockAI
+            </span>
+            <!-- Search Bar -->
+            <div class="relative flex-1 max-w-md">
+                <div class="relative">
+                    <input type="text" id="companySearch" class="w-full bg-surface-container border border-outline-variant rounded-lg pl-10 pr-10 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Search company, symbol, or fincode..." autocomplete="off">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                    <div id="searchLoader" class="search-loader absolute right-3 top-1/2 -translate-y-1/2"></div>
+                    <button id="clearSearch" class="clear-search absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface">✕</button>
                 </div>
+                <div id="searchResults" class="search-results"></div>
             </div>
-            <div id="searchResults" class="search-results"></div>
-            <div class="settings-wrapper">
-                <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
-                <div id="settingsDropdown" class="settings-dropdown" style="display: none;">
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="relative">
+                <button id="settingsBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
+                    <span class="material-symbols-outlined text-on-surface-variant">settings</span>
+                </button>
+                <div id="settingsDropdown" class="settings-dropdown">
                     <button id="helpBtn" class="dropdown-item">Help</button>
-                    <button id="logoutDropdownBtn" class="dropdown-item logout-item">Logout</button>
+                    <button id="themeToggleBtn" class="dropdown-item flex items-center gap-2">
+                        <span id="themeIcon" class="material-symbols-outlined">dark_mode</span>
+                        <span id="themeLabel">Dark</span>
+                    </button>
+                    <button id="logoutDropdownBtn" class="dropdown-item">Logout</button>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <main class="main-content">
-            <div id="noResults" class="empty-state">
-                <div class="empty-state-icon">🔍</div>
-                <h2>Search for a Company</h2>
-                <p>Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
-                <div class="empty-state-examples">
-                    <div class="example-company">Reliance Industries</div>
-                    <div class="example-company">Birla</div>
-                    <div class="example-company">Infosys</div>
-                    <div class="example-company">HDFC Bank</div>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 bg-background relative pb-32 md:pb-32">
+
+        <!-- Empty State -->
+        <div id="noResults" class="flex flex-col items-center justify-center h-full text-center">
+            <div class="text-6xl">🔍</div>
+            <h2 class="font-display text-display mt-6">Search for a Company</h2>
+            <p class="text-on-surface-variant max-w-md mt-2">Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
+            <div class="empty-state-examples flex flex-wrap gap-3 mt-6">
+                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">Reliance Industries</button>
+                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">Birla</button>
+                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">Infosys</button>
+                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">HDFC Bank</button>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboardContent" class="content-wrapper hidden">
+            <div class="flex gap-6">
+                <!-- Sidebar: only Watchlist -->
+                <aside id="sidebar" class="hidden md:flex flex-col w-[240px] shrink-0 bg-surface-container border-r border-outline-variant p-4 h-[calc(100vh-56px)] sticky top-16 overflow-y-auto">
+                    <div class="mb-6">
+                        <h2 class="font-h1 text-h1 text-on-surface">Portfolio</h2>
+                        <p class="font-label text-label text-on-surface-variant">Strategic Research</p>
+                    </div>
+                    <!-- Watchlist -->
+                    <div class="border-t border-outline-variant pt-4">
+                        <h4 class="font-label text-label text-on-surface-variant uppercase tracking-wider mb-2">Watchlist</h4>
+                        <div class="space-y-1">
+                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">Reliance Industries</button>
+                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">Infosys</button>
+                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">HDFC Bank</button>
+                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">Tata Consultancy</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main -->
+                <div class="flex-1 space-y-6">
+
+                    <!-- Hero -->
+                    <section class="border-b border-outline-variant pb-6">
+                        <div class="flex flex-wrap justify-between items-start gap-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 rounded font-label text-[10px] tracking-wider uppercase">NSE</span>
+                                    <span id="companyStatus" class="text-on-surface-variant font-data-sm text-data-sm">-</span>
+                                </div>
+                                <h2 id="companyName" class="font-display text-display text-on-background tracking-tight">-</h2>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <span id="companySymbol" class="font-data-lg text-data-lg text-primary">-</span>
+                                    <span id="companyIndustry" class="font-data-md text-data-md text-on-surface-variant">-</span>
+                                </div>
+                            </div>
+                            <button id="backToEmptyBtn" class="px-3 py-1 border border-outline-variant rounded-lg hover:bg-surface-container-high transition">← Back</button>
+                        </div>
+                    </section>
+
+                    <!-- KPI -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+                        <div class="kpi-card bg-surface border border-outline-variant p-4 rounded-xl"><p class="text-on-surface-variant font-label text-label uppercase">Revenue</p><p id="kpiRevenue" class="font-data-lg">-</p></div>
+                        <div class="kpi-card bg-surface border border-outline-variant p-4 rounded-xl"><p class="text-on-surface-variant font-label text-label uppercase">PAT</p><p id="kpiPAT" class="font-data-lg">-</p></div>
+                        <div class="kpi-card bg-surface border border-outline-variant p-4 rounded-xl"><p class="text-on-surface-variant font-label text-label uppercase">Promoter</p><p id="kpiPromoter" class="font-data-lg">-</p></div>
+                        <div class="kpi-card bg-surface border border-outline-variant p-4 rounded-xl"><p class="text-on-surface-variant font-label text-label uppercase">Public</p><p id="kpiPublic" class="font-data-lg">-</p></div>
+                        <div class="kpi-card bg-surface border border-outline-variant p-4 rounded-xl"><p class="text-on-surface-variant font-label text-label uppercase">Mutual Fund</p><p id="kpiMutualFund" class="font-data-lg">-</p></div>
+                        <div class="kpi-card bg-surface border border-outline-variant p-4 rounded-xl"><p class="text-on-surface-variant font-label text-label uppercase">FII/FPI</p><p id="kpiFII" class="font-data-lg">-</p></div>
+                    </div>
+
+                    <!-- Overview Tab -->
+                    <div id="overviewTab" class="tab-content active">
+                        <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="font-h2 text-h2">Market Snapshot</h3>
+                                    <span class="flex items-center gap-1 px-1.5 py-0.5 bg-tertiary/15 text-tertiary rounded text-[9px] font-bold uppercase">Live</span>
+                                </div>
+                                <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <div><span class="text-on-surface-variant font-caption text-caption">Open</span><p id="marketOpen" class="font-data-md">₹ -</p></div>
+                                        <div><span class="text-on-surface-variant font-caption text-caption">High</span><p id="marketHigh" class="font-data-md">₹ -</p></div>
+                                        <div><span class="text-on-surface-variant font-caption text-caption">Low</span><p id="marketLow" class="font-data-md">₹ -</p></div>
+                                        <div><span class="text-on-surface-variant font-caption text-caption">Close</span><p id="marketClose" class="font-data-md">₹ -</p></div>
+                                        <div><span class="text-on-surface-variant font-caption text-caption">Volume</span><p id="marketVolume" class="font-data-md">-</p></div>
+                                        <div><span class="text-on-surface-variant font-caption text-caption">Value</span><p id="marketValue" class="font-data-md">₹ -</p></div>
+                                    </div>
+                                </div>
+                                <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                    <h4 class="font-label text-label text-on-surface-variant uppercase">Company Details</h4>
+                                    <div class="grid grid-cols-2 gap-3 mt-2">
+                                        <div><span class="text-caption text-on-surface-variant">ISIN</span><p id="companyISIN" class="font-data-sm">-</p></div>
+                                        <div><span class="text-caption text-on-surface-variant">FINCODE</span><p id="companyFincode" class="font-data-sm">-</p></div>
+                                        <div><span class="text-caption text-on-surface-variant">Chairman</span><p id="companyChairman" class="font-data-sm">-</p></div>
+                                        <div><span class="text-caption text-on-surface-variant">MD</span><p id="companyMD" class="font-data-sm">-</p></div>
+                                        <div class="col-span-2"><span class="text-caption text-on-surface-variant">Company Secretary</span><p id="companyCS" class="font-data-sm">-</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <h3 class="font-h2 text-h2">Shareholding Pattern</h3>
+                                <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center p-2 hover:bg-surface-container-high rounded"><span>Promoter Group</span><span id="holdingPromoter" class="font-data-md text-primary">-</span></div>
+                                        <div class="flex justify-between items-center p-2 hover:bg-surface-container-high rounded"><span>Public</span><span id="holdingPublic" class="font-data-md text-secondary">-</span></div>
+                                        <div class="flex justify-between items-center p-2 hover:bg-surface-container-high rounded"><span>Mutual Funds</span><span id="holdingMutualFund" class="font-data-md text-tertiary">-</span></div>
+                                        <div class="flex justify-between items-center p-2 hover:bg-surface-container-high rounded"><span>FII / FPI</span><span id="holdingFPI" class="font-data-md text-outline">-</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financials Tab -->
+                    <div id="financialsTab" class="tab-content">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <h3 class="font-h2 text-h2 mb-4">Financial Summary</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Year End</span><p id="finYearEnd" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Revenue</span><p id="finRevenue" class="font-data-md">₹ -</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Operating Profit</span><p id="finOperatingProfit" class="font-data-md">₹ -</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">PAT</span><p id="finPAT" class="font-data-md">₹ -</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">EPS</span><p id="finEPS" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Dividend %</span><p id="finDividend" class="font-data-md">-</p></div>
+                                </div>
+                            </div>
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <h3 class="font-h2 text-h2 mb-4">Market Analysis (Yahoo Finance)</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Current Price</span><p id="yfCurrentPrice" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">P/E Ratio</span><p id="yfPE" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">52W High</span><p id="yfHigh" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">52W Low</span><p id="yfLow" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Market Cap</span><p id="yfMarketCap" class="font-data-md">-</p></div>
+                                    <div><span class="text-on-surface-variant font-caption text-caption">Volume</span><p id="yfVolume" class="font-data-md">-</p></div>
+                                </div>
+                            </div>
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                                    <h3 class="font-h2 text-h2">Stock Price Trend</h3>
+                                    <div class="flex gap-2">
+                                        <select id="periodSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
+                                            <option value="1d">1D</option>
+                                            <option value="5d">5D</option>
+                                            <option value="1mo">1M</option>
+                                            <option value="3mo">3M</option>
+                                            <option value="6mo">6M</option>
+                                            <option value="1y" selected>1Y</option>
+                                            <option value="2y">2Y</option>
+                                            <option value="5y">5Y</option>
+                                        </select>
+                                        <select id="intervalSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
+                                            <option value="1m">1 Minute</option>
+                                            <option value="5m">5 Minutes</option>
+                                            <option value="15m">15 Minutes</option>
+                                            <option value="30m">30 Minutes</option>
+                                            <option value="1h">1 Hour</option>
+                                            <option value="1d">Daily</option>
+                                            <option value="1wk">Weekly</option>
+                                            <option value="1mo" selected>Monthly</option>
+                                        </select>
+                                        <button id="refreshChartBtn" class="bg-primary text-on-primary px-3 py-1 rounded text-sm hover:opacity-90 transition">Refresh</button>
+                                    </div>
+                                </div>
+                                <canvas id="priceChart" style="max-height: 400px; width:100%"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News Tab -->
+                    <div id="newsTab" class="tab-content">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4"><h3 class="font-h2 text-h2 mb-4">Latest News</h3><div id="newsList"></div></div>
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4"><h3 class="font-h2 text-h2 mb-4">Announcements</h3><div id="announcementsList"></div></div>
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4"><h3 class="font-h2 text-h2 mb-4">Corporate Actions</h3><div id="actionsList"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- AI Analysis Tab -->
+                    <div id="analysisTab" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-h2 text-h2 flex items-center gap-2"><span class="material-symbols-outlined text-primary">auto_awesome</span> AI Analysis</h3>
+                                    <div class="flex gap-2">
+                                        <button id="ollamaChip" class="ai-chip px-3 py-1 rounded-full bg-surface-container-high hover:bg-surface-container-highest transition text-sm">Ollama</button>
+                                        <button id="openaiChip" class="ai-chip px-3 py-1 rounded-full bg-primary text-on-primary transition text-sm">OpenAI</button>
+                                    </div>
+                                </div>
+                                <div id="aiSummaryContent" class="ai-summary-text text-on-surface-variant ai-scroll">Loading AI analysis...</div>
+                            </div>
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4 flex flex-col h-[450px]">
+                                <h3 class="font-h2 text-h2 mb-2">💬 AI Research Copilot</h3>
+                                <p class="text-on-surface-variant text-sm mb-2">Ask anything about this company. The assistant remembers the conversation.</p>
+                                <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 mb-3">
+                                    <div class="chat-welcome bg-surface-container-high p-3 rounded-xl"><p class="text-body text-on-surface-variant">👋 Hello! I'm your AI research assistant. Ask me about financials, announcements, shareholding, market data, or anything else about this company.</p></div>
+                                </div>
+                                <div class="chat-input-area flex gap-2">
+                                    <textarea id="aiQuestion" class="flex-1 bg-background border border-outline-variant rounded-xl p-2 resize-none min-h-[40px] focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Ask a follow-up question..." rows="1"></textarea>
+                                    <button id="askAIButton" class="bg-primary text-on-primary px-4 py-2 rounded-xl hover:opacity-90 transition text-sm">Send</button>
+                                </div>
+                                <div class="suggested-prompts flex flex-wrap gap-2 mt-3">
+                                    <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">What are the risks?</button>
+                                    <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">Compare with last quarter</button>
+                                    <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">Should I buy?</button>
+                                    <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">Explain debt levels</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </main>
 
-            <div id="dashboardContent" class="content-wrapper">
-                <!-- Hero Section -->
-                <section class="hero-section">
-                    <div class="company-header">
-                        <div class="company-title-group">
-                            <h1 id="companyName">-</h1>
-                            <div class="company-subtitle">
-                                <span id="companySymbol" class="symbol-badge">-</span>
-                                <span id="companyIndustry" class="industry-badge">-</span>
-                                <span id="companyStatus" class="status-badge">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="kpi-grid">
-                        <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value" id="kpiRevenue">-</div></div>
-                        <div class="kpi-card"><div class="kpi-label">PAT</div><div class="kpi-value" id="kpiPAT">-</div></div>
-                        <div class="kpi-card"><div class="kpi-label">Promoter</div><div class="kpi-value" id="kpiPromoter">-</div></div>
-                        <div class="kpi-card"><div class="kpi-label">Public</div><div class="kpi-value" id="kpiPublic">-</div></div>
-                        <div class="kpi-card"><div class="kpi-label">Mutual Fund</div><div class="kpi-value" id="kpiMutualFund">-</div></div>
-                        <div class="kpi-card"><div class="kpi-label">FII/FPI</div><div class="kpi-value" id="kpiFII">-</div></div>
-                    </div>
-                </section>
-
-                <div class="tab-system">
-                    <button class="tab-button active" data-tab="overview">Overview</button>
-                    <button class="tab-button" data-tab="financials">Financials</button>
-                    <button class="tab-button" data-tab="news">News & Updates</button>
-                    <button class="tab-button" data-tab="analysis">AI Analysis</button>
-                </div>
-
-                <div id="overviewTab" class="tab-content active">
-                    <div class="two-column-layout">
-                        <div class="panel">
-                            <div class="panel-header"><span class="panel-title">Market Snapshot</span></div>
-                            <div class="market-grid">
-                                <div class="market-metric"><div class="metric-label">Open</div><div class="metric-value" id="marketOpen">₹ -</div></div>
-                                <div class="market-metric"><div class="metric-label">High</div><div class="metric-value" id="marketHigh">₹ -</div></div>
-                                <div class="market-metric"><div class="metric-label">Low</div><div class="metric-value" id="marketLow">₹ -</div></div>
-                                <div class="market-metric"><div class="metric-label">Close</div><div class="metric-value" id="marketClose">₹ -</div></div>
-                                <div class="market-metric"><div class="metric-label">Volume</div><div class="metric-value" id="marketVolume">-</div></div>
-                                <div class="market-metric"><div class="metric-label">Value</div><div class="metric-value" id="marketValue">₹ -</div></div>
-                            </div>
-                        </div>
-                        <div class="panel">
-                            <div class="panel-header"><span class="panel-title">Shareholding Pattern</span></div>
-                            <div class="shareholding-grid">
-                                <div class="shareholding-item"><div class="shareholding-label">Promoters</div><div class="shareholding-value" id="holdingPromoter">-</div></div>
-                                <div class="shareholding-item"><div class="shareholding-label">Public</div><div class="shareholding-value" id="holdingPublic">-</div></div>
-                                <div class="shareholding-item"><div class="shareholding-label">Mutual Funds</div><div class="shareholding-value" id="holdingMutualFund">-</div></div>
-                                <div class="shareholding-item"><div class="shareholding-label">FPI / FII</div><div class="shareholding-value" id="holdingFPI">-</div></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel">
-                        <div class="panel-header"><span class="panel-title">Company Details</span></div>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                            <div><div class="metric-label">ISIN</div><div id="companyISIN" class="metric-value">-</div></div>
-                            <div><div class="metric-label">FINCODE</div><div id="companyFincode" class="metric-value">-</div></div>
-                            <div><div class="metric-label">Chairman</div><div id="companyChairman" style="color: var(--text-secondary); font-size: 14px;">-</div></div>
-                            <div><div class="metric-label">Managing Director</div><div id="companyMD" style="color: var(--text-secondary); font-size: 14px;">-</div></div>
-                            <div style="grid-column: 1 / -1;"><div class="metric-label">Company Secretary</div><div id="companyCS" style="color: var(--text-secondary); font-size: 14px;">-</div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="financialsTab" class="tab-content">
-                    <div class="panel">
-                        <div class="panel-header"><span class="panel-title">Financial Summary</span></div>
-                        <div class="financial-summary-grid">
-                            <div class="financial-item"><div class="financial-label">Year End</div><div class="financial-value" id="finYearEnd">-</div></div>
-                            <div class="financial-item"><div class="financial-label">Revenue</div><div class="financial-value" id="finRevenue">₹ -</div></div>
-                            <div class="financial-item"><div class="financial-label">Operating Profit</div><div class="financial-value" id="finOperatingProfit">₹ -</div></div>
-                            <div class="financial-item"><div class="financial-label">PAT</div><div class="financial-value" id="finPAT">₹ -</div></div>
-                            <div class="financial-item"><div class="financial-label">EPS</div><div class="financial-value" id="finEPS">-</div></div>
-                            <div class="financial-item"><div class="financial-label">Dividend %</div><div class="financial-value" id="finDividend">-</div></div>
-                        </div>
-                    </div>
-                    <div class="section-divider"></div>
-                    <div class="panel">
-                        <div class="panel-header"><span class="panel-title">Market Analysis (Yahoo Finance)</span></div>
-                        <div class="financial-summary-grid">
-                            <div class="financial-item"><div class="financial-label">Current Price</div><div class="financial-value" id="yfCurrentPrice">-</div></div>
-                            <div class="financial-item"><div class="financial-label">PE Ratio</div><div class="financial-value" id="yfPE">-</div></div>
-                            <div class="financial-item"><div class="financial-label">52W High</div><div class="financial-value" id="yfHigh">-</div></div>
-                            <div class="financial-item"><div class="financial-label">52W Low</div><div class="financial-value" id="yfLow">-</div></div>
-                            <div class="financial-item"><div class="financial-label">Market Cap</div><div class="financial-value" id="yfMarketCap">-</div></div>
-                            <div class="financial-item"><div class="financial-label">Volume</div><div class="financial-value" id="yfVolume">-</div></div>
-                        </div>
-                    </div>
-                    <div class="section-divider"></div>
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Stock Price Trend</span>
-                            <div class="chart-controls" style="margin-left: auto; display: flex; gap: 12px;">
-                                <select id="periodSelect" style="background: var(--bg-panel); color: white; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 4px 8px;">
-                                    <option value="1d">1 Day</option><option value="5d">5 Days</option><option value="1mo">1 Month</option>
-                                    <option value="3mo">3 Months</option><option value="6mo">6 Months</option><option value="1y" selected>1 Year</option>
-                                    <option value="2y">2 Years</option><option value="5y">5 Years</option>
-                                </select>
-                                <select id="intervalSelect" style="background: var(--bg-panel); color: white; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 4px 8px;">
-                                    <option value="1m">1 Minute</option><option value="5m">5 Minutes</option><option value="15m">15 Minutes</option>
-                                    <option value="30m">30 Minutes</option><option value="1h">1 Hour</option><option value="1d">Daily</option>
-                                    <option value="1wk">Weekly</option><option value="1mo" selected>Monthly</option>
-                                </select>
-                                <button id="refreshChartBtn" style="background: var(--accent-blue); border: none; border-radius: 6px; padding: 4px 12px; cursor: pointer;">Refresh</button>
-                            </div>
-                        </div>
-                        <canvas id="priceChart" style="max-height: 500px;"></canvas>
-                        <div class="chart-note" style="font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 8px;">* Intraday data available only for last 7 days</div>
-                    </div>
-                </div>
-
-                <div id="newsTab" class="tab-content">
-                    <div class="panel"><div class="panel-header"><span class="panel-title">Latest News</span></div><div id="newsList"></div></div>
-                    <div class="section-divider"></div>
-                    <div class="panel"><div class="panel-header"><span class="panel-title">Announcements</span></div><div id="announcementsList"></div></div>
-                    <div class="section-divider"></div>
-                    <div class="panel"><div class="panel-header"><span class="panel-title">Corporate Actions</span></div><div id="actionsList"></div></div>
-                </div>
-
-                <div id="analysisTab" class="tab-content">
-                    <div class="panel ai-analysis-section">
-                        <div class="panel-header ai-header">
-                            <span class="ai-badge">🤖 AI Analysis</span>
-                            <div class="ai-model-switch">
-                                <button id="ollamaChip" class="ai-chip" type="button">Ollama</button>
-                                <button id="openaiChip" class="ai-chip active" type="button">OpenAI</button>
-                            </div>
-                        </div>
-                        <div class="ai-summary-content"><div class="ai-summary-text" id="aiOverview">Loading AI analysis...</div></div>
-                    </div>
-                    <div class="section-divider"></div>
-                    <div class="panel ai-copilot-panel">
-                        <div class="panel-header"><span class="panel-title">💬 AI Research Copilot</span></div>
-                        <div class="copilot-subtitle">Ask anything about this company. The assistant remembers the conversation.</div>
-                        <div id="chatMessages" class="chat-messages">
-                            <div class="chat-welcome"><div class="chat-bot-message">👋 Hello! I'm your AI research assistant. Ask me about financials, announcements, shareholding, market data, or anything else about this company.</div></div>
-                        </div>
-                        <div class="chat-input-area">
-                            <textarea id="aiQuestion" placeholder="Ask a follow-up question..." rows="1"></textarea>
-                            <button id="askAIButton" class="chat-send-btn">Send</button>
-                        </div>
-                        <div class="suggested-prompts">
-                            <button class="prompt-chip">What are the risks?</button>
-                            <button class="prompt-chip">Compare with last quarter</button>
-                            <button class="prompt-chip">Should I buy?</button>
-                            <button class="prompt-chip">Explain debt levels</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+    <!-- Bottom Navigation (visible on all screen sizes) -->
+    <nav id="mobileNav" class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant z-50">
+        <button class="tab-button flex flex-col items-center text-primary" data-tab="overview">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-[10px]">Overview</span>
+        </button>
+        <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="financials">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <span class="text-[10px]">Financials</span>
+        </button>
+        <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="news">
+            <span class="material-symbols-outlined">newspaper</span>
+            <span class="text-[10px]">News</span>
+        </button>
+        <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="analysis">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            <span class="text-[10px]">AI</span>
+        </button>
+    </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
