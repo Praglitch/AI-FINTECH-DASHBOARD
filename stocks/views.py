@@ -146,7 +146,7 @@ def company_ai_summary(request, fincode):
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={"model": "tinyllama", "prompt": prompt, "stream": False},
-            timeout=10   # prevent hanging
+            timeout=60  # prevent hanging
         )
         data = response.json()
         return JsonResponse({"summary": data["response"]})
