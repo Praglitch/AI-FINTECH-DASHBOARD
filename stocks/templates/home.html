@@ -148,7 +148,6 @@
         .bot-message { align-items: flex-start; }
         .message-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; margin-left: 12px; margin-right: 12px; }
         .ai-scroll { max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
-        /* Typing indicator */
         .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; background: #1a202c; border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; border: 1px solid #414754; }
         .typing-indicator span { width: 8px; height: 8px; background: #94a3b8; border-radius: 50%; animation: typing 1.4s infinite ease-in-out; }
         .typing-indicator span:nth-child(1) { animation-delay: 0s; }
@@ -200,42 +199,42 @@
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto p-6 bg-background relative pb-32 md:pb-32">
 
-        <!-- Empty State -->
+        <!-- Empty State (no chips) -->
         <div id="noResults" class="flex flex-col items-center justify-center h-full text-center">
             <div class="text-6xl">🔍</div>
             <h2 class="font-display text-display mt-6">Search for a Company</h2>
             <p class="text-on-surface-variant max-w-md mt-2">Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
-            <div class="empty-state-examples flex flex-wrap gap-3 mt-6">
-                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">Reliance Industries</button>
-                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">Birla</button>
-                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">Infosys</button>
-                <button class="example-company bg-surface-container-high border border-outline-variant px-4 py-2 rounded-full hover:border-primary hover:text-primary transition">HDFC Bank</button>
-            </div>
         </div>
 
         <!-- Dashboard -->
         <div id="dashboardContent" class="content-wrapper hidden">
-            <div class="flex gap-6">
-                <!-- Sidebar: only Watchlist -->
-                <aside id="sidebar" class="hidden md:flex flex-col w-[240px] shrink-0 bg-surface-container border-r border-outline-variant p-4 h-[calc(100vh-56px)] sticky top-16 overflow-y-auto">
+            <!-- Flex container with items-start to prevent sidebar stretching -->
+            <div class="flex gap-6 items-start">
+                <!-- Sidebar: sticky and fixed height -->
+                <aside id="sidebar" class="hidden md:flex flex-col w-[240px] shrink-0 bg-surface-container border-r border-outline-variant p-4 sticky top-16 h-[calc(100vh-56px)] overflow-y-auto">
                     <div class="mb-6">
                         <h2 class="font-h1 text-h1 text-on-surface">Portfolio</h2>
                         <p class="font-label text-label text-on-surface-variant">Strategic Research</p>
                     </div>
-                    <!-- Watchlist -->
-                    <div class="border-t border-outline-variant pt-4">
-                        <h4 class="font-label text-label text-on-surface-variant uppercase tracking-wider mb-2">Watchlist</h4>
-                        <div class="space-y-1">
-                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">Reliance Industries</button>
-                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">Infosys</button>
-                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">HDFC Bank</button>
-                            <button class="sidebar-company w-full text-left px-3 py-1.5 rounded hover:bg-surface-container-high transition text-sm text-on-surface-variant hover:text-on-surface">Tata Consultancy</button>
-                        </div>
-                    </div>
+                    <!-- Sidebar Tabs (Desktop) -->
+                    <nav class="flex flex-col gap-1">
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label text-label transition-all" data-tab="overview">
+                            <span class="material-symbols-outlined">dashboard</span> Overview
+                        </button>
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="financials">
+                            <span class="material-symbols-outlined">bar_chart</span> Financials
+                        </button>
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news">
+                            <span class="material-symbols-outlined">newspaper</span> News
+                        </button>
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis">
+                            <span class="material-symbols-outlined">auto_awesome</span> AI Analysis
+                        </button>
+                    </nav>
                 </aside>
 
-                <!-- Main -->
-                <div class="flex-1 space-y-6">
+                <!-- Main Content Area (all tab contents) -->
+                <div class="flex-1 min-h-0 space-y-6">
 
                     <!-- Hero -->
                     <section class="border-b border-outline-variant pb-6">
@@ -406,13 +405,14 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+
+                </div> <!-- end main content -->
+            </div> <!-- end flex container -->
+        </div> <!-- end dashboardContent -->
     </main>
 
-    <!-- Bottom Navigation (visible on all screen sizes) -->
-    <nav id="mobileNav" class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant z-50">
+    <!-- Bottom Navigation (mobile only) -->
+    <nav id="mobileNav" class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant z-50">
         <button class="tab-button flex flex-col items-center text-primary" data-tab="overview">
             <span class="material-symbols-outlined">dashboard</span>
             <span class="text-[10px]">Overview</span>
@@ -431,9 +431,10 @@
         </button>
     </nav>
 
+    <!-- Scripts (FIXED CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.umd.min.js"></script>
     <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>

@@ -48,6 +48,14 @@ def search_companies(request):
     return JsonResponse(data, safe=False)
 
 
+# DEFAULT COMPANIES (for watchlist and example chips)
+@login_required
+def default_companies(request):
+    # Returns top 10 companies from Accord DB (empty search)
+    data = search_company_data('')
+    return JsonResponse(data, safe=False)
+
+
 # COMPANY DETAILS
 @login_required
 def company_details(request, fincode):

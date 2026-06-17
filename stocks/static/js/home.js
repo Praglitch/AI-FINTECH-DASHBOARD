@@ -30,7 +30,6 @@ function updateThemeUI() {
         icon.textContent = isDark ? 'dark_mode' : 'light_mode';
         label.textContent = isDark ? 'Dark' : 'Light';
     }
-    console.log('Theme updated, dark class:', isDark);
 }
 
 function toggleTheme() {
@@ -38,7 +37,6 @@ function toggleTheme() {
     html.classList.toggle('dark');
     localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
     updateThemeUI();
-    console.log('Toggled theme, dark class:', html.classList.contains('dark'));
 }
 
 // Set initial theme
@@ -52,12 +50,8 @@ function toggleTheme() {
     updateThemeUI();
 })();
 
-// Attach toggle event
 if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', toggleTheme);
-    console.log('Theme toggle button found, listener attached.');
-} else {
-    console.error('Theme toggle button not found!');
 }
 
 // ---------- SETTINGS DROPDOWN ----------
@@ -120,32 +114,6 @@ async function performSearch() {
         searchResults.innerHTML = '<div class="search-result-item">Unable to search</div>';
     }
 }
-
-// ---------- EXAMPLE COMPANY CLICKS ----------
-document.querySelectorAll('.example-company').forEach(el => {
-    el.addEventListener('click', () => {
-        searchInput.value = el.textContent.trim();
-        clearButton.style.display = 'block';
-        performSearch();
-        setTimeout(() => {
-            const firstResult = searchResults.querySelector('.search-result-item');
-            if (firstResult) firstResult.click();
-        }, 300);
-    });
-});
-
-// ---------- SIDEBAR WATCHLIST COMPANY CLICKS ----------
-document.querySelectorAll('.sidebar-company').forEach(el => {
-    el.addEventListener('click', () => {
-        searchInput.value = el.textContent.trim();
-        clearButton.style.display = 'block';
-        performSearch();
-        setTimeout(() => {
-            const firstResult = searchResults.querySelector('.search-result-item');
-            if (firstResult) firstResult.click();
-        }, 300);
-    });
-});
 
 // ---------- BACK TO EMPTY ----------
 function resetToEmptyState() {
@@ -377,7 +345,6 @@ function addMessageToChat(role, content, isError = false, originalQuestion = nul
 
 function showTypingIndicator() {
     if (!chatMessages) return;
-    // Remove existing indicator
     const existing = document.getElementById('typingIndicator');
     if (existing) existing.remove();
     const typingDiv = document.createElement('div');
@@ -407,7 +374,6 @@ async function sendMessage(overrideQuestion = null) {
 
     showTypingIndicator();
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    // Give time for DOM to update
     await new Promise(r => requestAnimationFrame(r));
 
     try {
@@ -418,7 +384,6 @@ async function sendMessage(overrideQuestion = null) {
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        // Remove indicator after a tiny delay
         await new Promise(r => setTimeout(r, 150));
         removeTypingIndicator();
         addMessageToChat('bot', data.answer, false, question);
@@ -540,28 +505,41 @@ document.getElementById('refreshChartBtn').addEventListener('click', refreshChar
 document.getElementById('periodSelect').addEventListener('change', refreshChart);
 document.getElementById('intervalSelect').addEventListener('change', refreshChart);
 
-// ---------- TABS (only bottom navigation) ----------
+// ---------- TABS ----------
 function setActiveTab(tabName) {
+    // Sidebar buttons (desktop)
+    document.querySelectorAll('#sidebar .tab-button').forEach(btn => {
+        const isActive = btn.dataset.tab === tabName;
+        if (isActive) {
+            btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+            btn.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-high');
+        } else {
+            btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+            btn.classList.add('text-on-surface-variant', 'hover:bg-surface-container-high');
+        }
+    });
+    // Bottom nav buttons (mobile only)
     document.querySelectorAll('#mobileNav .tab-button').forEach(btn => {
         const isActive = btn.dataset.tab === tabName;
         btn.classList.toggle('text-primary', isActive);
         btn.classList.toggle('text-on-surface-variant', !isActive);
     });
+    // Tab content
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     const target = document.getElementById(tabName + 'Tab');
     if (target) target.classList.add('active');
     localStorage.setItem('lastActiveTab', tabName);
 }
 
-// Attach click listeners to bottom nav buttons
-document.querySelectorAll('#mobileNav .tab-button').forEach(btn => {
+// Attach click listeners to all tab buttons (sidebar + mobile)
+document.querySelectorAll('.tab-button').forEach(btn => {
     btn.addEventListener('click', function(e) {
         const tabName = this.dataset.tab;
         if (tabName) setActiveTab(tabName);
     });
 });
 
-// Restore last active tab
+// Restore last active tab – default Overview
 const lastTab = localStorage.getItem('lastActiveTab');
 if (lastTab && ['overview', 'financials', 'news', 'analysis'].includes(lastTab)) {
     setActiveTab(lastTab);

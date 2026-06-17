@@ -17,7 +17,8 @@ from stocks.views import (
     company_yfinance,
     company_chat,
     logout_view,
-    help_page
+    help_page,
+    default_companies
 )
 
 urlpatterns = [
@@ -39,4 +40,5 @@ urlpatterns = [
     path("company/<int:fincode>/openai-summary/", company_openai_summary),
     path("company/<int:fincode>/chat/", company_chat, name="company_chat"),
     path("company/<int:fincode>/yfinance/", company_yfinance, name="company_yfinance"),
+    path('search/default/', default_companies, name='default_companies'),
 ]
