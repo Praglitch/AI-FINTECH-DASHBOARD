@@ -15,4 +15,4 @@ db.sqlite3
 .vscode/
 
 # OS Files
-.DS_Store
+.DS_Storenifty data/
