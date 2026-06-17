@@ -108,6 +108,7 @@
         }
     </script>
     <style>
+        /* ... (same styles as before, kept short) ... */
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -196,44 +197,44 @@
         </div>
     </header>
 
-    <!-- Main Container: Sidebar + Content (side by side) -->
-    <div class="flex h-[calc(100vh-56px)] overflow-hidden">
-        <!-- Sidebar (fixed, sticky) -->
-        <aside id="sidebar" class="hidden md:flex flex-col w-[240px] shrink-0 bg-surface-container border-r border-outline-variant p-4 overflow-y-auto sticky top-0 h-full">
-            <div class="mb-6">
-                <h2 class="font-h1 text-h1 text-on-surface">Portfolio</h2>
-                <p class="font-label text-label text-on-surface-variant">Strategic Research</p>
-            </div>
-            <!-- Sidebar Tabs (Desktop) -->
-            <nav class="flex flex-col gap-1">
-                <button class="tab-button flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label text-label transition-all" data-tab="overview">
-                    <span class="material-symbols-outlined">dashboard</span> Overview
-                </button>
-                <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="financials">
-                    <span class="material-symbols-outlined">bar_chart</span> Financials
-                </button>
-                <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news">
-                    <span class="material-symbols-outlined">newspaper</span> News
-                </button>
-                <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis">
-                    <span class="material-symbols-outlined">auto_awesome</span> AI Analysis
-                </button>
-            </nav>
-        </aside>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 bg-background relative pb-32 md:pb-6">
 
-        <!-- Main Content (scrollable) -->
-        <main class="flex-1 overflow-y-auto p-6 bg-background relative pb-32 md:pb-6">
+        <!-- Empty State -->
+        <div id="noResults" class="flex flex-col items-center justify-center h-full text-center">
+            <div class="text-6xl">🔍</div>
+            <h2 class="font-display text-display mt-6">Search for a Company</h2>
+            <p class="text-on-surface-variant max-w-md mt-2">Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
+        </div>
 
-            <!-- Empty State -->
-            <div id="noResults" class="flex flex-col items-center justify-center h-full text-center">
-                <div class="text-6xl">🔍</div>
-                <h2 class="font-display text-display mt-6">Search for a Company</h2>
-                <p class="text-on-surface-variant max-w-md mt-2">Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
-            </div>
+        <!-- Dashboard (hidden until company selected) -->
+        <div id="dashboardContent" class="content-wrapper hidden">
+            <div class="flex gap-6 items-start">
+                <!-- Sidebar -->
+                <aside id="sidebar" class="hidden md:flex flex-col w-[240px] shrink-0 bg-surface-container border-r border-outline-variant p-4 sticky top-16 h-[calc(100vh-56px)] overflow-y-auto">
+                    <div class="mb-6">
+                        <h2 class="font-h1 text-h1 text-on-surface">Portfolio</h2>
+                        <p class="font-label text-label text-on-surface-variant">Strategic Research</p>
+                    </div>
+                    <nav class="flex flex-col gap-1">
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label text-label transition-all" data-tab="overview">
+                            <span class="material-symbols-outlined">dashboard</span> Overview
+                        </button>
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="financials">
+                            <span class="material-symbols-outlined">bar_chart</span> Financials
+                        </button>
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news">
+                            <span class="material-symbols-outlined">newspaper</span> News
+                        </button>
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis">
+                            <span class="material-symbols-outlined">auto_awesome</span> AI Analysis
+                        </button>
+                    </nav>
+                </aside>
 
-            <!-- Dashboard Content -->
-            <div id="dashboardContent" class="content-wrapper hidden">
-                <div class="space-y-6">
+                <!-- Main Content Area -->
+                <div class="flex-1 min-h-0 space-y-6">
+
                     <!-- Hero -->
                     <section class="border-b border-outline-variant pb-6">
                         <div class="flex flex-wrap justify-between items-start gap-4">
@@ -404,10 +405,10 @@
                         </div>
                     </div>
 
-                </div> <!-- end space-y-6 -->
-            </div> <!-- end dashboardContent -->
-        </main>
-    </div> <!-- end flex container -->
+                </div>
+            </div>
+        </div>
+    </main>
 
     <!-- Bottom Navigation (mobile only) -->
     <nav id="mobileNav" class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant z-50">
