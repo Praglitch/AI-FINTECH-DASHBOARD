@@ -71,7 +71,7 @@ searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim();
     clearButton.style.display = query ? 'block' : 'none';
     clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(() => performSearch(), 100);
+    window.searchTimeout = setTimeout(() => performSearch(), 300);
 });
 
 clearButton.addEventListener('click', () => {
