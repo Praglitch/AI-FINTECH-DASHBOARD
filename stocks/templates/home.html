@@ -108,7 +108,6 @@
         }
     </script>
     <style>
-        /* ... (same styles as before, kept short) ... */
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -156,6 +155,9 @@
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-10px); opacity: 1; } }
         .chat-welcome { margin-bottom: 16px; }
+        /* Chart container visibility */
+        .chart-container { display: none; }
+        .chart-container.active { display: block; }
     </style>
 </head>
 <body class="bg-background text-on-surface font-body min-h-screen">
@@ -207,7 +209,7 @@
             <p class="text-on-surface-variant max-w-md mt-2">Get detailed insights including financials, market performance, shareholding patterns, announcements, news and AI analysis.</p>
         </div>
 
-        <!-- Dashboard (hidden until company selected) -->
+        <!-- Dashboard -->
         <div id="dashboardContent" class="content-wrapper hidden">
             <div class="flex gap-6 items-start">
                 <!-- Sidebar -->
@@ -232,7 +234,7 @@
                     </nav>
                 </aside>
 
-                <!-- Main Content Area -->
+                <!-- Main Content -->
                 <div class="flex-1 min-h-0 space-y-6">
 
                     <!-- Hero -->
@@ -332,9 +334,22 @@
                                 </div>
                             </div>
                             <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <!-- Chart Type Selector -->
                                 <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                                     <h3 class="font-h2 text-h2">Stock Price Trend</h3>
-                                    <div class="flex gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-sm font-label text-on-surface-variant">Chart:</label>
+                                        <select id="chartTypeSelect" class="bg-surface-container-high border border-outline-variant rounded px-3 py-1 text-sm">
+                                            <option value="line">Line (Chart.js)</option>
+                                            <option value="candlestick">Candlestick (Lightweight)</option>
+                                            <option value="advanced" selected>Advanced (ECharts + Indicators)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Chart containers -->
+                                <div id="chart-line" class="chart-container">
+                                    <div class="flex gap-2 mb-2">
                                         <select id="periodSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
                                             <option value="1d">1D</option>
                                             <option value="5d">5D</option>
@@ -357,8 +372,16 @@
                                         </select>
                                         <button id="refreshChartBtn" class="bg-primary text-on-primary px-3 py-1 rounded text-sm hover:opacity-90 transition">Refresh</button>
                                     </div>
+                                    <canvas id="priceChart" style="max-height: 400px; width:100%"></canvas>
                                 </div>
-                                <canvas id="priceChart" style="max-height: 400px; width:100%"></canvas>
+
+                                <div id="chart-candlestick" class="chart-container">
+                                    <div id="lw-chart" style="height: 500px; width: 100%;"></div>
+                                </div>
+
+                                <div id="chart-advanced" class="chart-container active">
+                                    <div id="echarts-container" style="height: 500px; width: 100%;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -366,9 +389,30 @@
                     <!-- News Tab -->
                     <div id="newsTab" class="tab-content">
                         <div class="grid grid-cols-1 gap-6">
-                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4"><h3 class="font-h2 text-h2 mb-4">Latest News</h3><div id="newsList"></div></div>
-                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4"><h3 class="font-h2 text-h2 mb-4">Announcements</h3><div id="announcementsList"></div></div>
-                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4"><h3 class="font-h2 text-h2 mb-4">Corporate Actions</h3><div id="actionsList"></div></div>
+                            <!-- Latest News -->
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <h3 class="font-h2 text-h2 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">newspaper</span>
+                                    Latest News
+                                </h3>
+                                <div id="newsList" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                            </div>
+                            <!-- Announcements -->
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <h3 class="font-h2 text-h2 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-secondary">campaign</span>
+                                    Announcements
+                                </h3>
+                                <div id="announcementsList" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                            </div>
+                            <!-- Corporate Actions -->
+                            <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
+                                <h3 class="font-h2 text-h2 mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-tertiary">receipt_long</span>
+                                    Corporate Actions
+                                </h3>
+                                <div id="actionsList" class="space-y-3 max-h-80 overflow-y-auto"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -431,9 +475,21 @@
     </nav>
 
     <!-- Scripts -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.umd.min.js"></script>
+
+    <!-- Lightweight Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <!-- Chart scripts -->
+    <script src="{% static 'js/lightweight-chart.js' %}"></script>
+    <script src="{% static 'js/echarts-chart.js' %}"></script>
+
     <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>

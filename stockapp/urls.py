@@ -18,7 +18,8 @@ from stocks.views import (
     company_chat,
     logout_view,
     help_page,
-    default_companies
+    default_companies,
+    tradingview_data
 )
 
 urlpatterns = [
@@ -41,4 +42,5 @@ urlpatterns = [
     path("company/<int:fincode>/chat/", company_chat, name="company_chat"),
     path("company/<int:fincode>/yfinance/", company_yfinance, name="company_yfinance"),
     path('search/default/', default_companies, name='default_companies'),
+    path('api/tradingview/<int:fincode>/', tradingview_data, name='tradingview_data'),
 ]

@@ -48,28 +48,22 @@ def search_companies(request):
     return JsonResponse(data, safe=False)
 
 
-# DEFAULT COMPANIES (for watchlist and example chips)
-@login_required
-def default_companies(request):
-    # Returns top 10 companies from Accord DB (empty search)
-    data = search_company_data('')
-    return JsonResponse(data, safe=False)
-
-
 # COMPANY DETAILS
 @login_required
 def company_details(request, fincode):
     data = get_company_details_data(fincode)
     if not data:
-        return JsonResponse({"error": "Company not found"}, status=404)
-    return JsonResponse(data)
+        return JsonResponse({"error": "Company not found", "available": False}, status=200)
+    return JsonResponse({"data": data, "available": True}, status=200)
 
 
 # COMPANY NEWS
 @login_required
 def company_news(request, fincode):
     news = get_company_news_data(fincode)
-    return JsonResponse(news, safe=False)
+    if not news:
+        return JsonResponse({"error": "No news available", "available": False}, status=200)
+    return JsonResponse({"data": news, "available": True}, status=200)
 
 
 # COMPANY FINANCIALS
@@ -77,8 +71,8 @@ def company_news(request, fincode):
 def company_financials(request, fincode):
     data = get_company_financials_data(fincode)
     if not data:
-        return JsonResponse({"error": "Financials not found"}, status=404)
-    return JsonResponse(data)
+        return JsonResponse({"error": "Financial data not available", "available": False}, status=200)
+    return JsonResponse({"data": data, "available": True}, status=200)
 
 
 # COMPANY ANNOUNCEMENTS
@@ -86,8 +80,8 @@ def company_financials(request, fincode):
 def company_announcements(request, fincode):
     announcements = get_company_announcements_data(fincode)
     if announcements is None:
-        return JsonResponse({"error": "Company not found"}, status=404)
-    return JsonResponse(announcements, safe=False)
+        return JsonResponse({"error": "No announcements available", "available": False}, status=200)
+    return JsonResponse({"data": announcements, "available": True}, status=200)
 
 
 # COMPANY MARKET SNAPSHOT
@@ -95,8 +89,8 @@ def company_announcements(request, fincode):
 def company_market(request, fincode):
     data = get_company_market_data(fincode)
     if not data:
-        return JsonResponse({"error": "Market data not found"}, status=404)
-    return JsonResponse(data)
+        return JsonResponse({"error": "Market data not available", "available": False}, status=200)
+    return JsonResponse({"data": data, "available": True}, status=200)
 
 
 # COMPANY SHAREHOLDING
@@ -104,15 +98,17 @@ def company_market(request, fincode):
 def company_shareholding(request, fincode):
     data = get_company_shareholding_data(fincode)
     if not data:
-        return JsonResponse({"error": "Shareholding data not found"}, status=404)
-    return JsonResponse(data)
+        return JsonResponse({"error": "Shareholding data not available", "available": False}, status=200)
+    return JsonResponse({"data": data, "available": True}, status=200)
 
 
 # COMPANY CORPORATE ACTIONS
 @login_required
 def company_corporate_actions(request, fincode):
     actions = get_company_corporate_actions_data(fincode)
-    return JsonResponse({"actions": actions})
+    if not actions:
+        return JsonResponse({"error": "No corporate actions available", "available": False, "actions": []}, status=200)
+    return JsonResponse({"available": True, "actions": actions}, status=200)
 
 
 # TEMPORARY TEST ENDPOINT
@@ -120,12 +116,13 @@ def company_corporate_actions(request, fincode):
 def test_ollama(request):
     response = requests.post(
         "http://localhost:11434/api/generate",
-        json={"model": "llama3.2", "prompt": "Say hello in one sentence.", "stream": False}
+        json={"model": "tinyllama", "prompt": "Say hello in one sentence.", "stream": False}
     )
     data = response.json()
     return JsonResponse({"response": data["response"]})
 
 
+# COMPANY AI SUMMARY - OLLAMA
 @login_required
 def company_ai_summary(request, fincode):
     company = get_company_details_data(fincode)
@@ -154,7 +151,7 @@ def company_ai_summary(request, fincode):
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={"model": "tinyllama", "prompt": prompt, "stream": False},
-            timeout=120  # prevent hanging
+            timeout=120
         )
         data = response.json()
         return JsonResponse({"summary": data["response"]})
@@ -262,7 +259,38 @@ def company_yfinance(request, fincode):
     period = request.GET.get("period", "1y")
     interval = request.GET.get("interval", "1mo")
     data = get_yfinance_data(fincode, period, interval)
-    return JsonResponse(data)
+    if not data:
+        return JsonResponse({"error": "No data available", "available": False}, status=200)
+    return JsonResponse({"data": data, "available": True}, status=200)
+
+
+@login_required
+def default_companies(request):
+    """Return top 10 companies (empty search) for watchlist and example chips."""
+    from .services.company_service import search_company_data
+    data = search_company_data('')
+    return JsonResponse(data, safe=False)
+
+
+@login_required
+def tradingview_data(request, fincode):
+    """Return OHLC data in TradingView format."""
+    from .services.yfinance_services import get_yfinance_data
+    from datetime import datetime
+    period = request.GET.get('period', '1y')
+    interval = request.GET.get('interval', '1D')
+    data = get_yfinance_data(fincode, period, interval)
+    if not data or not data.get('chart_data'):
+        return JsonResponse({'s': 'error', 'errmsg': 'No data'})
+    chart_data = data['chart_data']
+    for item in chart_data:
+        if ' ' in item['date']:
+            dt = datetime.strptime(item['date'], '%Y-%m-%d %H:%M:%S')
+        else:
+            dt = datetime.strptime(item['date'], '%Y-%m-%d')
+        item['time'] = int(dt.timestamp())
+    return JsonResponse({'s': 'ok', 'data': chart_data})
+
 
 
 # LOGOUT
