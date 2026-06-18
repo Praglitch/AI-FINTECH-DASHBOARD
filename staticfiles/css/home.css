@@ -348,3 +348,71 @@ html:not(.dark) .dropdown-item {
 html:not(.dark) .dropdown-item:hover {
     background: #f1f5f9 !important;
 }
+
+/* News, Announcements, Corporate Actions – improved list items */
+.news-item,
+.announcement-item,
+.action-item {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 18px;
+    background: var(--bg-panel);
+    border-radius: 10px;
+    border-left: 3px solid var(--border-color);
+    transition: all 0.2s ease;
+    cursor: default;
+}
+.news-item:hover,
+.announcement-item:hover,
+.action-item:hover {
+    background: var(--bg-tertiary);
+    border-left-color: var(--accent-blue);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.announcement-item:hover {
+    border-left-color: var(--secondary);
+}
+.action-item:hover {
+    border-left-color: var(--tertiary);
+}
+
+.item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+.item-date {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.item-date::before {
+    content: "📅";
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* For dark/light consistency */
+html:not(.dark) .news-item,
+html:not(.dark) .announcement-item,
+html:not(.dark) .action-item {
+    background: #f8fafc;
+    border-left-color: #d1d5db;
+}
+html:not(.dark) .news-item:hover,
+html:not(.dark) .announcement-item:hover,
+html:not(.dark) .action-item:hover {
+    background: #f1f5f9;
+    border-left-color: #2563eb;
+}
+html:not(.dark) .announcement-item:hover {
+    border-left-color: #8b5cf6;
+}
+html:not(.dark) .action-item:hover {
+    border-left-color: #10b981;
+}

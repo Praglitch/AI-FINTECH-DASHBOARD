@@ -30,7 +30,6 @@ function updateThemeUI() {
         icon.textContent = isDark ? 'dark_mode' : 'light_mode';
         label.textContent = isDark ? 'Dark' : 'Light';
     }
-    console.log('Theme updated, dark class:', isDark);
 }
 
 function toggleTheme() {
@@ -38,7 +37,6 @@ function toggleTheme() {
     html.classList.toggle('dark');
     localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
     updateThemeUI();
-    console.log('Toggled theme, dark class:', html.classList.contains('dark'));
 }
 
 // Set initial theme
@@ -52,12 +50,8 @@ function toggleTheme() {
     updateThemeUI();
 })();
 
-// Attach toggle event
 if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', toggleTheme);
-    console.log('Theme toggle button found, listener attached.');
-} else {
-    console.error('Theme toggle button not found!');
 }
 
 // ---------- SETTINGS DROPDOWN ----------
@@ -77,7 +71,7 @@ searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim();
     clearButton.style.display = query ? 'block' : 'none';
     clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(() => performSearch(), 100);
+    window.searchTimeout = setTimeout(() => performSearch(), 500);
 });
 
 clearButton.addEventListener('click', () => {
@@ -121,32 +115,6 @@ async function performSearch() {
     }
 }
 
-// ---------- EXAMPLE COMPANY CLICKS ----------
-document.querySelectorAll('.example-company').forEach(el => {
-    el.addEventListener('click', () => {
-        searchInput.value = el.textContent.trim();
-        clearButton.style.display = 'block';
-        performSearch();
-        setTimeout(() => {
-            const firstResult = searchResults.querySelector('.search-result-item');
-            if (firstResult) firstResult.click();
-        }, 300);
-    });
-});
-
-// ---------- SIDEBAR WATCHLIST COMPANY CLICKS ----------
-document.querySelectorAll('.sidebar-company').forEach(el => {
-    el.addEventListener('click', () => {
-        searchInput.value = el.textContent.trim();
-        clearButton.style.display = 'block';
-        performSearch();
-        setTimeout(() => {
-            const firstResult = searchResults.querySelector('.search-result-item');
-            if (firstResult) firstResult.click();
-        }, 300);
-    });
-});
-
 // ---------- BACK TO EMPTY ----------
 function resetToEmptyState() {
     dashboardContent.style.display = 'none';
@@ -161,6 +129,47 @@ function resetToEmptyState() {
 
 backToEmptyBtn.addEventListener('click', resetToEmptyState);
 
+// ---------- CHART TYPE SELECTOR ----------
+let selectedChartType = 'advanced';
+
+function switchChartType(type) {
+    // Clean up existing chart instances
+    if (window.echartsInstance) {
+        window.echartsInstance.dispose();
+        window.echartsInstance = null;
+    }
+    if (window.lwChart) {
+        const lwContainer = document.getElementById('lw-chart');
+        if (lwContainer) lwContainer.innerHTML = '';
+        window.lwChart = null;
+    }
+    if (priceChart) {
+        priceChart.destroy();
+        priceChart = null;
+    }
+
+    document.querySelectorAll('.chart-container').forEach(el => el.classList.remove('active'));
+    document.getElementById('chart-' + type).classList.add('active');
+
+    if (currentFincode) {
+        if (type === 'line') {
+            fetchChartData(document.getElementById('periodSelect').value, document.getElementById('intervalSelect').value);
+        } else if (type === 'candlestick') {
+            if (typeof initLightweightChart === 'function') {
+                initLightweightChart(currentFincode);
+            }
+        } else if (type === 'advanced') {
+            if (typeof initEChartsChart === 'function') {
+                initEChartsChart(currentFincode);
+            }
+        }
+    }
+}
+
+document.getElementById('chartTypeSelect').addEventListener('change', function() {
+    switchChartType(this.value);
+});
+
 // ---------- SELECT COMPANY ----------
 async function selectCompany(fincode) {
     currentFincode = fincode;
@@ -174,97 +183,146 @@ async function selectCompany(fincode) {
 
     document.getElementById('companyName').textContent = 'Loading...';
     try {
-        const [company, market] = await Promise.all([
-            fetch(`/company/${fincode}/`).then(r => r.json()),
-            fetch(`/company-market/${fincode}/`).then(r => r.json())
-        ]);
+        // Company details
+        const companyResp = await fetch(`/company/${fincode}/`);
+        const company = companyResp.json();
+        // Market data
+        const marketResp = await fetch(`/company-market/${fincode}/`);
+        const market = marketResp.json();
 
+        const [companyData, marketData] = await Promise.all([company, market]);
+
+        // Update critical data
         const updateCritical = () => {
-            document.getElementById('companyName').textContent = company.compname;
-            document.getElementById('companySymbol').textContent = company.symbol || 'N/A';
-            document.getElementById('companyIndustry').textContent = company.industry || 'N/A';
-            document.getElementById('companyStatus').textContent = company.status || 'N/A';
-            document.getElementById('companyISIN').textContent = company.isin || 'N/A';
-            document.getElementById('companyFincode').textContent = company.fincode;
-            document.getElementById('companyChairman').textContent = company.chairman || 'N/A';
-            document.getElementById('companyMD').textContent = company.mdir || 'N/A';
-            document.getElementById('companyCS').textContent = company.cosec || 'N/A';
-            document.getElementById('marketOpen').textContent = '₹ ' + (market.open || '--');
-            document.getElementById('marketHigh').textContent = '₹ ' + (market.high || '--');
-            document.getElementById('marketLow').textContent = '₹ ' + (market.low || '--');
-            document.getElementById('marketClose').textContent = '₹ ' + (market.close || '--');
-            document.getElementById('marketVolume').textContent = market.volume || '--';
-            document.getElementById('marketValue').textContent = '₹ ' + (market.value || '--');
+            if (companyData.available !== false) {
+                const c = companyData.data;
+                document.getElementById('companyName').textContent = c.compname || 'N/A';
+                document.getElementById('companySymbol').textContent = c.symbol || 'N/A';
+                document.getElementById('companyIndustry').textContent = c.industry || 'N/A';
+                document.getElementById('companyStatus').textContent = c.status || 'N/A';
+                document.getElementById('companyISIN').textContent = c.isin || 'N/A';
+                document.getElementById('companyFincode').textContent = c.fincode || 'N/A';
+                document.getElementById('companyChairman').textContent = c.chairman || 'N/A';
+                document.getElementById('companyMD').textContent = c.mdir || 'N/A';
+                document.getElementById('companyCS').textContent = c.cosec || 'N/A';
+            }
+            if (marketData.available !== false) {
+                const m = marketData.data;
+                document.getElementById('marketOpen').textContent = '₹ ' + (m.open || '--');
+                document.getElementById('marketHigh').textContent = '₹ ' + (m.high || '--');
+                document.getElementById('marketLow').textContent = '₹ ' + (m.low || '--');
+                document.getElementById('marketClose').textContent = '₹ ' + (m.close || '--');
+                document.getElementById('marketVolume').textContent = m.volume || '--';
+                document.getElementById('marketValue').textContent = '₹ ' + (m.value || '--');
+            }
         };
         updateCritical();
 
-        // Background data (incremental)
+        // Initialize the selected chart
+        const chartType = document.getElementById('chartTypeSelect').value;
+        if (chartType === 'line') {
+            fetchChartData(document.getElementById('periodSelect').value, document.getElementById('intervalSelect').value);
+        } else if (chartType === 'candlestick') {
+            if (typeof initLightweightChart === 'function') {
+                initLightweightChart(fincode);
+            }
+        } else if (chartType === 'advanced') {
+            if (typeof initEChartsChart === 'function') {
+                initEChartsChart(fincode);
+            }
+        }
+
+        // Background data (incremental) - with availability checks
+        // Shareholding
         fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
+            if (data.available === false) {
+                ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
+                 'kpiPromoter','kpiPublic','kpiMutualFund','kpiFII'].forEach(id => {
+                    document.getElementById(id).textContent = 'N/A';
+                });
+                return;
+            }
+            const d = data.data;
             ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
              'kpiPromoter','kpiPublic','kpiMutualFund','kpiFII'].forEach(id => {
                 let val;
-                if (id.includes('Promoter')) val = data.promoter;
-                else if (id.includes('Public')) val = data.public;
-                else if (id.includes('MutualFund')) val = data.mutual_fund;
-                else if (id.includes('FPI') || id.includes('FII')) val = data.fpi;
-                if (val !== undefined) document.getElementById(id).textContent = (val || '--') + '%';
+                if (id.includes('Promoter')) val = d.promoter;
+                else if (id.includes('Public')) val = d.public;
+                else if (id.includes('MutualFund')) val = d.mutual_fund;
+                else if (id.includes('FPI') || id.includes('FII')) val = d.fpi;
+                document.getElementById(id).textContent = (val || '--') + '%';
             });
         }).catch(e => console.warn('shareholding error', e));
 
+        // Financials
         fetch(`/company/${fincode}/financials/`).then(r => r.json()).then(data => {
-            const set = (id, value) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = value;
-            };
-            set('kpiRevenue', formatNumber(data.net_sales));
-            set('kpiPAT', formatNumber(data.profit_after_tax));
-            set('finYearEnd', data.year_end || '--');
-            set('finRevenue', '₹ ' + formatNumber(data.net_sales));
-            set('finOperatingProfit', '₹ ' + formatNumber(data.operating_profit));
-            set('finPAT', '₹ ' + formatNumber(data.profit_after_tax));
-            set('finEPS', data.reported_eps || '--');
-            set('finDividend', (data.dividend_perc || '--') + '%');
+            if (data.available === false) {
+                ['kpiRevenue','kpiPAT','finYearEnd','finRevenue','finOperatingProfit',
+                 'finPAT','finEPS','finDividend'].forEach(id => {
+                    document.getElementById(id).textContent = 'N/A';
+                });
+                return;
+            }
+            const d = data.data;
+            document.getElementById('kpiRevenue').textContent = formatNumber(d.net_sales);
+            document.getElementById('kpiPAT').textContent = formatNumber(d.profit_after_tax);
+            document.getElementById('finYearEnd').textContent = d.year_end || '--';
+            document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(d.net_sales);
+            document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(d.operating_profit);
+            document.getElementById('finPAT').textContent = '₹ ' + formatNumber(d.profit_after_tax);
+            document.getElementById('finEPS').textContent = d.reported_eps || '--';
+            document.getElementById('finDividend').textContent = (d.dividend_perc || '--') + '%';
         }).catch(e => console.warn('financials error', e));
 
+        // News
         fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
             const container = document.getElementById('newsList');
-            if (!data || !Array.isArray(data) || data.length === 0) {
+            if (data.available === false || !data.data || data.data.length === 0) {
                 container.innerHTML = '<div class="empty-state">No news available</div>';
-            } else {
-                container.innerHTML = data.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+                return;
             }
+            const news = data.data;
+            container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
         }).catch(e => console.warn('news error', e));
 
+        // Announcements
         fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
             const container = document.getElementById('announcementsList');
-            if (!data || !Array.isArray(data) || data.length === 0) {
+            if (data.available === false || !data.data || data.data.length === 0) {
                 container.innerHTML = '<div class="empty-state">No announcements available</div>';
-            } else {
-                container.innerHTML = data.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+                return;
             }
+            const announcements = data.data;
+            container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
         }).catch(e => console.warn('announcements error', e));
 
+        // Corporate actions
         fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
             const container = document.getElementById('actionsList');
-            const actionsArray = data.actions || [];
-            if (!actionsArray.length) {
+            if (data.available === false || !data.actions || data.actions.length === 0) {
                 container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
-            } else {
-                container.innerHTML = actionsArray.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+                return;
             }
+            const actions = data.actions;
+            container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
         }).catch(e => console.warn('actions error', e));
 
+        // Yahoo Finance (for chart data and KPI updates)
         fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
-            if (data.chart_data && data.chart_data.length) renderPriceChart(data.chart_data);
-            document.getElementById('yfCurrentPrice').textContent = (data.current_price ?? '--') !== '--' ? `₹ ${data.current_price}` : '--';
-            window.originalCurrentPrice = document.getElementById('yfCurrentPrice').textContent;
-            document.getElementById('yfPE').textContent = data.pe_ratio ?? '--';
-            document.getElementById('yfHigh').textContent = data.fifty_two_week_high ?? '--';
-            document.getElementById('yfLow').textContent = data.fifty_two_week_low ?? '--';
-            document.getElementById('yfMarketCap').textContent = formatNumber(data.market_cap);
-            document.getElementById('yfVolume').textContent = formatNumber(data.volume);
+            if (data.available === false || !data.data) return;
+            const d = data.data;
+            if (d.current_price) {
+                document.getElementById('yfCurrentPrice').textContent = `₹ ${d.current_price}`;
+                window.originalCurrentPrice = `₹ ${d.current_price}`;
+            }
+            if (d.pe_ratio) document.getElementById('yfPE').textContent = d.pe_ratio;
+            if (d.fifty_two_week_high) document.getElementById('yfHigh').textContent = d.fifty_two_week_high;
+            if (d.fifty_two_week_low) document.getElementById('yfLow').textContent = d.fifty_two_week_low;
+            if (d.market_cap) document.getElementById('yfMarketCap').textContent = formatNumber(d.market_cap);
+            if (d.volume) document.getElementById('yfVolume').textContent = formatNumber(d.volume);
         }).catch(e => console.warn('yfinance error', e));
 
+        // AI summary (OpenAI)
         fetch(`/company/${fincode}/openai-summary/`).then(r => r.json()).then(data => {
             document.getElementById('aiSummaryContent').innerHTML = data.summary || 'No AI analysis available';
         }).catch(e => {
@@ -277,6 +335,68 @@ async function selectCompany(fincode) {
         showError('Unable to load company data');
     }
 }
+
+// ---------- CHART.JS (Line chart) ----------
+let priceChart = null;
+function renderPriceChart(chartData) {
+    const ctx = document.getElementById('priceChart');
+    if (!ctx) return;
+    if (priceChart) priceChart.destroy();
+    if (!chartData || chartData.length === 0) {
+        ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+        return;
+    }
+    const dates = chartData.map(item => item.date);
+    const prices = chartData.map(item => item.close);
+    priceChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: dates, datasets: [{ label: 'Price', data: prices, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: '#f59e0b', pointBorderColor: '#ffffff' }] },
+        options: { responsive: true, maintainAspectRatio: true, interaction: { mode: 'index', intersect: false, axis: 'x' }, plugins: { tooltip: { mode: 'index', intersect: false, callbacks: { label: (context) => `₹ ${context.raw.toFixed(2)}` }, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#f59e0b', bodyColor: '#ffffff', borderColor: '#f59e0b', borderWidth: 1 }, legend: { display: false } }, scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 6, color: '#cbd5e1' }, grid: { display: false } }, y: { ticks: { callback: (val) => '₹' + val.toFixed(0), color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
+    });
+    const canvas = document.getElementById('priceChart');
+    const handleMouseMove = (e) => {
+        if (!priceChart) return;
+        const activePoints = priceChart.getElementsAtEvent(e);
+        if (activePoints && activePoints.length > 0) {
+            const dataIndex = activePoints[0].dataIndex;
+            const price = prices[dataIndex];
+            const date = dates[dataIndex];
+            const yfCurrentPrice = document.getElementById('yfCurrentPrice');
+            if (yfCurrentPrice) yfCurrentPrice.innerHTML = `₹ ${price.toFixed(2)} <span style="font-size: 10px; color: #94a3b8;">(${date})</span>`;
+        } else {
+            if (window.originalCurrentPrice && document.getElementById('yfCurrentPrice')) document.getElementById('yfCurrentPrice').textContent = window.originalCurrentPrice;
+        }
+    };
+    const handleMouseLeave = () => { if (window.originalCurrentPrice && document.getElementById('yfCurrentPrice')) document.getElementById('yfCurrentPrice').textContent = window.originalCurrentPrice; };
+    canvas.removeEventListener('mousemove', handleMouseMove);
+    canvas.removeEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+}
+
+async function fetchChartData(period, interval) {
+    if (!currentFincode) return null;
+    try {
+        const response = await fetch(`/company/${currentFincode}/yfinance/?period=${period}&interval=${interval}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (data.available !== false && data.data && data.data.chart_data && data.data.chart_data.length) {
+            renderPriceChart(data.data.chart_data);
+            return data.data.chart_data;
+        }
+        return null;
+    } catch (error) { console.error('Chart fetch error:', error); showError('Failed to load chart data'); return null; }
+}
+
+async function refreshChart() {
+    const period = document.getElementById('periodSelect').value;
+    const interval = document.getElementById('intervalSelect').value;
+    await fetchChartData(period, interval);
+}
+
+document.getElementById('refreshChartBtn').addEventListener('click', refreshChart);
+document.getElementById('periodSelect').addEventListener('change', refreshChart);
+document.getElementById('intervalSelect').addEventListener('change', refreshChart);
 
 // ---------- LOADING PLACEHOLDERS ----------
 function showLoadingPlaceholders() {
@@ -377,7 +497,6 @@ function addMessageToChat(role, content, isError = false, originalQuestion = nul
 
 function showTypingIndicator() {
     if (!chatMessages) return;
-    // Remove existing indicator
     const existing = document.getElementById('typingIndicator');
     if (existing) existing.remove();
     const typingDiv = document.createElement('div');
@@ -407,7 +526,6 @@ async function sendMessage(overrideQuestion = null) {
 
     showTypingIndicator();
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    // Give time for DOM to update
     await new Promise(r => requestAnimationFrame(r));
 
     try {
@@ -418,7 +536,6 @@ async function sendMessage(overrideQuestion = null) {
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        // Remove indicator after a tiny delay
         await new Promise(r => setTimeout(r, 150));
         removeTypingIndicator();
         addMessageToChat('bot', data.answer, false, question);
@@ -480,68 +597,18 @@ if (openaiChip) {
     });
 }
 
-// ---------- CHART ----------
-let priceChart = null;
-function renderPriceChart(chartData) {
-    const ctx = document.getElementById('priceChart');
-    if (!ctx) return;
-    if (priceChart) priceChart.destroy();
-    if (!chartData || chartData.length === 0) {
-        ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
-        return;
-    }
-    const dates = chartData.map(item => item.date);
-    const prices = chartData.map(item => item.close);
-    priceChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: dates, datasets: [{ label: 'Price', data: prices, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: '#f59e0b', pointBorderColor: '#ffffff' }] },
-        options: { responsive: true, maintainAspectRatio: true, interaction: { mode: 'index', intersect: false, axis: 'x' }, plugins: { tooltip: { mode: 'index', intersect: false, callbacks: { label: (context) => `₹ ${context.raw.toFixed(2)}` }, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#f59e0b', bodyColor: '#ffffff', borderColor: '#f59e0b', borderWidth: 1 }, legend: { display: false } }, scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 6, color: '#cbd5e1' }, grid: { display: false } }, y: { ticks: { callback: (val) => '₹' + val.toFixed(0), color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
-    });
-    const canvas = document.getElementById('priceChart');
-    const handleMouseMove = (e) => {
-        if (!priceChart) return;
-        const activePoints = priceChart.getElementsAtEvent(e);
-        if (activePoints && activePoints.length > 0) {
-            const dataIndex = activePoints[0].dataIndex;
-            const price = prices[dataIndex];
-            const date = dates[dataIndex];
-            const yfCurrentPrice = document.getElementById('yfCurrentPrice');
-            if (yfCurrentPrice) yfCurrentPrice.innerHTML = `₹ ${price.toFixed(2)} <span style="font-size: 10px; color: #94a3b8;">(${date})</span>`;
-        } else {
-            if (window.originalCurrentPrice && document.getElementById('yfCurrentPrice')) document.getElementById('yfCurrentPrice').textContent = window.originalCurrentPrice;
-        }
-    };
-    const handleMouseLeave = () => { if (window.originalCurrentPrice && document.getElementById('yfCurrentPrice')) document.getElementById('yfCurrentPrice').textContent = window.originalCurrentPrice; };
-    canvas.removeEventListener('mousemove', handleMouseMove);
-    canvas.removeEventListener('mouseleave', handleMouseLeave);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
-}
-
-async function fetchChartData(period, interval) {
-    if (!currentFincode) return null;
-    try {
-        const response = await fetch(`/company/${currentFincode}/yfinance/?period=${period}&interval=${interval}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        return data.chart_data;
-    } catch (error) { console.error('Chart fetch error:', error); showError('Failed to load chart data'); return null; }
-}
-
-async function refreshChart() {
-    const period = document.getElementById('periodSelect').value;
-    const interval = document.getElementById('intervalSelect').value;
-    const chartData = await fetchChartData(period, interval);
-    if (chartData && chartData.length > 0) renderPriceChart(chartData);
-    else { const ctx = document.getElementById('priceChart')?.getContext('2d'); if (ctx) ctx.clearRect(0, 0, ctx.width, ctx.height); showError('No data for this period/interval. Try a larger period or daily interval.'); }
-}
-
-document.getElementById('refreshChartBtn').addEventListener('click', refreshChart);
-document.getElementById('periodSelect').addEventListener('change', refreshChart);
-document.getElementById('intervalSelect').addEventListener('change', refreshChart);
-
-// ---------- TABS (only bottom navigation) ----------
+// ---------- TABS ----------
 function setActiveTab(tabName) {
+    document.querySelectorAll('#sidebar .tab-button').forEach(btn => {
+        const isActive = btn.dataset.tab === tabName;
+        if (isActive) {
+            btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+            btn.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-high');
+        } else {
+            btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+            btn.classList.add('text-on-surface-variant', 'hover:bg-surface-container-high');
+        }
+    });
     document.querySelectorAll('#mobileNav .tab-button').forEach(btn => {
         const isActive = btn.dataset.tab === tabName;
         btn.classList.toggle('text-primary', isActive);
@@ -553,15 +620,13 @@ function setActiveTab(tabName) {
     localStorage.setItem('lastActiveTab', tabName);
 }
 
-// Attach click listeners to bottom nav buttons
-document.querySelectorAll('#mobileNav .tab-button').forEach(btn => {
+document.querySelectorAll('.tab-button').forEach(btn => {
     btn.addEventListener('click', function(e) {
         const tabName = this.dataset.tab;
         if (tabName) setActiveTab(tabName);
     });
 });
 
-// Restore last active tab
 const lastTab = localStorage.getItem('lastActiveTab');
 if (lastTab && ['overview', 'financials', 'news', 'analysis'].includes(lastTab)) {
     setActiveTab(lastTab);

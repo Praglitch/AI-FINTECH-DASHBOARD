@@ -178,6 +178,10 @@ async function selectCompany(fincode) {
     sidebar.style.display = 'flex';
 
     resetAITab();
+
+    // 👇 Force Overview tab to be active
+    setActiveTab('overview');
+    
     searchResults.classList.remove('visible');
     showLoadingPlaceholders();
 
