@@ -14,12 +14,8 @@ const noResults = document.getElementById('noResults');
 const dashboardContent = document.getElementById('dashboardContent');
 const sidebar = document.getElementById('sidebar');
 const mobileNav = document.getElementById('mobileNav');
-const askAIButton = document.getElementById('askAIButton');
-const aiQuestion = document.getElementById('aiQuestion');
-const chatMessages = document.getElementById('chatMessages');
 
 let currentFincode = null;
-let conversationHistory = [];
 
 // ---------- THEME TOGGLE ----------
 function updateThemeUI() {
@@ -39,7 +35,6 @@ function toggleTheme() {
     updateThemeUI();
 }
 
-// Set initial theme
 (function setInitialTheme() {
     const saved = localStorage.getItem('theme');
     if (saved === 'light') {
@@ -121,7 +116,6 @@ function resetToEmptyState() {
     sidebar.style.display = 'none';
     noResults.style.display = 'flex';
     currentFincode = null;
-    resetAITab();
     searchInput.value = '';
     clearButton.style.display = 'none';
     searchResults.classList.remove('visible');
@@ -133,7 +127,6 @@ backToEmptyBtn.addEventListener('click', resetToEmptyState);
 let selectedChartType = 'advanced';
 
 function switchChartType(type) {
-    // Clean up existing chart instances
     if (window.echartsInstance) {
         window.echartsInstance.dispose();
         window.echartsInstance = null;
@@ -177,52 +170,42 @@ async function selectCompany(fincode) {
     dashboardContent.style.display = 'block';
     sidebar.style.display = 'flex';
 
-    resetAITab();
-
-    // 👇 Force Overview tab to be active
     setActiveTab('overview');
-    
     searchResults.classList.remove('visible');
     showLoadingPlaceholders();
 
     document.getElementById('companyName').textContent = 'Loading...';
     try {
-        // Company details
-        const companyResp = await fetch(`/company/${fincode}/`);
-        const company = companyResp.json();
-        // Market data
-        const marketResp = await fetch(`/company-market/${fincode}/`);
-        const market = marketResp.json();
+        const companyResp = fetch(`/company/${fincode}/`);
+        const marketResp = fetch(`/company-market/${fincode}/`);
 
-        const [companyData, marketData] = await Promise.all([company, market]);
+        const [companyData, marketData] = await Promise.all([
+            companyResp.then(r => r.json()),
+            marketResp.then(r => r.json())
+        ]);
 
-        // Update critical data
-        const updateCritical = () => {
-            if (companyData.available !== false) {
-                const c = companyData.data;
-                document.getElementById('companyName').textContent = c.compname || 'N/A';
-                document.getElementById('companySymbol').textContent = c.symbol || 'N/A';
-                document.getElementById('companyIndustry').textContent = c.industry || 'N/A';
-                document.getElementById('companyStatus').textContent = c.status || 'N/A';
-                document.getElementById('companyISIN').textContent = c.isin || 'N/A';
-                document.getElementById('companyFincode').textContent = c.fincode || 'N/A';
-                document.getElementById('companyChairman').textContent = c.chairman || 'N/A';
-                document.getElementById('companyMD').textContent = c.mdir || 'N/A';
-                document.getElementById('companyCS').textContent = c.cosec || 'N/A';
-            }
-            if (marketData.available !== false) {
-                const m = marketData.data;
-                document.getElementById('marketOpen').textContent = '₹ ' + (m.open || '--');
-                document.getElementById('marketHigh').textContent = '₹ ' + (m.high || '--');
-                document.getElementById('marketLow').textContent = '₹ ' + (m.low || '--');
-                document.getElementById('marketClose').textContent = '₹ ' + (m.close || '--');
-                document.getElementById('marketVolume').textContent = m.volume || '--';
-                document.getElementById('marketValue').textContent = '₹ ' + (m.value || '--');
-            }
-        };
-        updateCritical();
+        if (companyData.available !== false) {
+            const c = companyData.data;
+            document.getElementById('companyName').textContent = c.compname || 'N/A';
+            document.getElementById('companySymbol').textContent = c.symbol || 'N/A';
+            document.getElementById('companyIndustry').textContent = c.industry || 'N/A';
+            document.getElementById('companyStatus').textContent = c.status || 'N/A';
+            document.getElementById('companyISIN').textContent = c.isin || 'N/A';
+            document.getElementById('companyFincode').textContent = c.fincode || 'N/A';
+            document.getElementById('companyChairman').textContent = c.chairman || 'N/A';
+            document.getElementById('companyMD').textContent = c.mdir || 'N/A';
+            document.getElementById('companyCS').textContent = c.cosec || 'N/A';
+        }
+        if (marketData.available !== false) {
+            const m = marketData.data;
+            document.getElementById('marketOpen').textContent = '₹ ' + (m.open || '--');
+            document.getElementById('marketHigh').textContent = '₹ ' + (m.high || '--');
+            document.getElementById('marketLow').textContent = '₹ ' + (m.low || '--');
+            document.getElementById('marketClose').textContent = '₹ ' + (m.close || '--');
+            document.getElementById('marketVolume').textContent = m.volume || '--';
+            document.getElementById('marketValue').textContent = '₹ ' + (m.value || '--');
+        }
 
-        // Initialize the selected chart
         const chartType = document.getElementById('chartTypeSelect').value;
         if (chartType === 'line') {
             fetchChartData(document.getElementById('periodSelect').value, document.getElementById('intervalSelect').value);
@@ -236,8 +219,7 @@ async function selectCompany(fincode) {
             }
         }
 
-        // Background data (incremental) - with availability checks
-        // Shareholding
+        // Background data
         fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
             if (data.available === false) {
                 ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
@@ -258,7 +240,6 @@ async function selectCompany(fincode) {
             });
         }).catch(e => console.warn('shareholding error', e));
 
-        // Financials
         fetch(`/company/${fincode}/financials/`).then(r => r.json()).then(data => {
             if (data.available === false) {
                 ['kpiRevenue','kpiPAT','finYearEnd','finRevenue','finOperatingProfit',
@@ -278,7 +259,6 @@ async function selectCompany(fincode) {
             document.getElementById('finDividend').textContent = (d.dividend_perc || '--') + '%';
         }).catch(e => console.warn('financials error', e));
 
-        // News
         fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
             const container = document.getElementById('newsList');
             if (data.available === false || !data.data || data.data.length === 0) {
@@ -289,7 +269,6 @@ async function selectCompany(fincode) {
             container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
         }).catch(e => console.warn('news error', e));
 
-        // Announcements
         fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
             const container = document.getElementById('announcementsList');
             if (data.available === false || !data.data || data.data.length === 0) {
@@ -300,7 +279,6 @@ async function selectCompany(fincode) {
             container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
         }).catch(e => console.warn('announcements error', e));
 
-        // Corporate actions
         fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
             const container = document.getElementById('actionsList');
             if (data.available === false || !data.actions || data.actions.length === 0) {
@@ -311,7 +289,6 @@ async function selectCompany(fincode) {
             container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
         }).catch(e => console.warn('actions error', e));
 
-        // Yahoo Finance (for chart data and KPI updates)
         fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
             if (data.available === false || !data.data) return;
             const d = data.data;
@@ -326,7 +303,6 @@ async function selectCompany(fincode) {
             if (d.volume) document.getElementById('yfVolume').textContent = formatNumber(d.volume);
         }).catch(e => console.warn('yfinance error', e));
 
-        // AI summary (OpenAI)
         fetch(`/company/${fincode}/openai-summary/`).then(r => r.json()).then(data => {
             document.getElementById('aiSummaryContent').innerHTML = data.summary || 'No AI analysis available';
         }).catch(e => {
@@ -340,7 +316,7 @@ async function selectCompany(fincode) {
     }
 }
 
-// ---------- CHART.JS (Line chart) ----------
+// ---------- CHART.JS ----------
 let priceChart = null;
 function renderPriceChart(chartData) {
     const ctx = document.getElementById('priceChart');
@@ -420,24 +396,13 @@ function showLoadingPlaceholders() {
     if (aiSummary) aiSummary.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Loading AI analysis...</div>';
 }
 
-// ---------- RESET AI TAB ----------
-function resetAITab() {
-    const aiSummary = document.getElementById('aiSummaryContent');
-    if (aiSummary) aiSummary.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Loading AI analysis...</div>';
-    if (aiQuestion) aiQuestion.value = '';
-    if (chatMessages) {
-        chatMessages.innerHTML = `<div class="chat-welcome bg-surface-container-high p-4 rounded-xl"><p class="text-body text-on-surface-variant">👋 Hello! I'm your AI research assistant. Ask me about financials, announcements, shareholding, market data, or anything else about this company.</p></div>`;
-    }
-    conversationHistory = [];
-    const ollamaChip = document.getElementById('ollamaChip');
-    const openaiChip = document.getElementById('openaiChip');
-    if (ollamaChip && openaiChip) {
-        ollamaChip.classList.remove('active');
-        openaiChip.classList.add('active');
-    }
-}
+// ---------- STOCKSBOT (Unrestricted Chat) ----------
+let stocksbotHistory = [];
+let stocksbotCurrentQuestion = null;
+const stocksbotMessages = document.getElementById('stocksbotMessages');
+const stocksbotQuestion = document.getElementById('stocksbotQuestion');
+const stocksbotSendBtn = document.getElementById('stocksbotSendBtn');
 
-// ---------- CHAT UI ----------
 function formatBotMessage(text) {
     let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -452,8 +417,8 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => showError('Copied to clipboard!')).catch(err => console.error('Copy failed:', err));
 }
 
-function addMessageToChat(role, content, isError = false, originalQuestion = null) {
-    if (!chatMessages) return;
+function addStocksbotMessage(role, content, isError = false) {
+    if (!stocksbotMessages) return;
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'bot-message'}`;
     const bubble = document.createElement('div');
@@ -465,7 +430,7 @@ function addMessageToChat(role, content, isError = false, originalQuestion = nul
     metaDiv.className = 'message-meta';
     const timeSpan = document.createElement('span');
     timeSpan.className = 'message-time';
-    timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute:'2-digit' });
+    timeSpan.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     metaDiv.appendChild(timeSpan);
     if (role === 'bot') {
         const copyBtn = document.createElement('button');
@@ -474,121 +439,151 @@ function addMessageToChat(role, content, isError = false, originalQuestion = nul
         copyBtn.title = 'Copy answer';
         copyBtn.onclick = () => copyToClipboard(content);
         metaDiv.appendChild(copyBtn);
-        const regenBtn = document.createElement('button');
-        regenBtn.className = 'action-btn regen-btn';
-        regenBtn.innerHTML = '⟳';
-        regenBtn.title = 'Regenerate answer';
-        regenBtn.onclick = () => { if (originalQuestion) sendMessage(originalQuestion); else showError('Cannot regenerate: original question missing'); };
-        metaDiv.appendChild(regenBtn);
-        const likeBtn = document.createElement('button');
-        likeBtn.className = 'action-btn like-btn';
-        likeBtn.innerHTML = '👍';
-        likeBtn.title = 'Like this answer';
-        likeBtn.onclick = () => { console.log('Liked answer:', content); showError('Thanks for your feedback!'); };
-        metaDiv.appendChild(likeBtn);
-        const dislikeBtn = document.createElement('button');
-        dislikeBtn.className = 'action-btn dislike-btn';
-        dislikeBtn.innerHTML = '👎';
-        dislikeBtn.title = 'Dislike this answer';
-        dislikeBtn.onclick = () => { console.log('Disliked answer:', content); showError('Thanks for your feedback!'); };
-        metaDiv.appendChild(dislikeBtn);
     }
     messageDiv.appendChild(bubble);
     messageDiv.appendChild(metaDiv);
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    stocksbotMessages.appendChild(messageDiv);
+    stocksbotMessages.scrollTop = stocksbotMessages.scrollHeight;
+    return messageDiv;
 }
 
-function showTypingIndicator() {
-    if (!chatMessages) return;
-    const existing = document.getElementById('typingIndicator');
+function showStocksbotTyping() {
+    if (!stocksbotMessages) return;
+    const existing = document.getElementById('stocksbotTyping');
     if (existing) existing.remove();
     const typingDiv = document.createElement('div');
     typingDiv.className = 'chat-message bot-message';
-    typingDiv.id = 'typingIndicator';
+    typingDiv.id = 'stocksbotTyping';
     typingDiv.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
-    chatMessages.appendChild(typingDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    stocksbotMessages.appendChild(typingDiv);
+    stocksbotMessages.scrollTop = stocksbotMessages.scrollHeight;
 }
 
-function removeTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
+function removeStocksbotTyping() {
+    const indicator = document.getElementById('stocksbotTyping');
     if (indicator) indicator.remove();
 }
 
-async function sendMessage(overrideQuestion = null) {
-    if (!currentFincode) {
-        addMessageToChat('bot', 'Please select a company first.', true);
-        return;
-    }
-    const question = (overrideQuestion !== null) ? overrideQuestion : aiQuestion.value.trim();
-    if (!question) return;
-    askAIButton.disabled = true;
-    aiQuestion.disabled = true;
-    addMessageToChat('user', question);
-    if (overrideQuestion === null) aiQuestion.value = '';
+async function sendStocksbotMessageWithFincode(fincode, question) {
+    stocksbotSendBtn.disabled = true;
+    stocksbotQuestion.disabled = true;
 
-    showTypingIndicator();
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    await new Promise(r => requestAnimationFrame(r));
+    showStocksbotTyping();
 
     try {
-        const response = await fetch(`/company/${currentFincode}/chat/`, {
+        const response = await fetch('/stocksbot/chat/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question, history: conversationHistory.slice(-4) })
+            body: JSON.stringify({ question, history: stocksbotHistory.slice(-4), fincode })
         });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        await new Promise(r => setTimeout(r, 150));
-        removeTypingIndicator();
-        addMessageToChat('bot', data.answer, false, question);
-        conversationHistory.push({ role: 'user', content: question });
-        conversationHistory.push({ role: 'assistant', content: data.answer });
+        removeStocksbotTyping();
+
+        if (data.error) {
+            addStocksbotMessage('bot', `Error: ${data.error}`, true);
+        } else {
+            addStocksbotMessage('bot', data.answer, false);
+            stocksbotHistory.push({ role: 'user', content: question });
+            stocksbotHistory.push({ role: 'assistant', content: data.answer });
+            if (data.resolved_company) {
+                console.log(`StocksBot resolved: ${data.resolved_company}`);
+            }
+        }
     } catch (error) {
-        console.error('Chat error:', error);
-        removeTypingIndicator();
-        addMessageToChat('bot', 'Sorry, I encountered an error. Please try again.', true);
+        removeStocksbotTyping();
+        addStocksbotMessage('bot', 'Network error. Please try again.', true);
     } finally {
-        askAIButton.disabled = false;
-        aiQuestion.disabled = false;
-        aiQuestion.focus();
+        stocksbotSendBtn.disabled = false;
+        stocksbotQuestion.disabled = false;
+        stocksbotQuestion.focus();
     }
 }
 
-if (askAIButton) askAIButton.addEventListener('click', () => sendMessage());
-if (aiQuestion) aiQuestion.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
+async function sendStocksbotMessage() {
+    const question = stocksbotQuestion.value.trim();
+    if (!question) return;
+
+    stocksbotSendBtn.disabled = true;
+    stocksbotQuestion.disabled = true;
+    addStocksbotMessage('user', question);
+    stocksbotQuestion.value = '';
+
+    showStocksbotTyping();
+
+    try {
+        const response = await fetch('/stocksbot/chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, history: stocksbotHistory.slice(-4) })
+        });
+        const data = await response.json();
+        removeStocksbotTyping();
+
+        if (data.error) {
+            addStocksbotMessage('bot', `Error: ${data.error}`, true);
+        } else if (data.needs_clarification) {
+            const msgDiv = addStocksbotMessage('bot', data.message, false);
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'flex flex-wrap gap-2 mt-2';
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs';
+                btn.textContent = `${opt.name} (${opt.symbol})`;
+                btn.onclick = () => {
+                    sendStocksbotMessageWithFincode(opt.fincode, question);
+                };
+                optionsDiv.appendChild(btn);
+            });
+            if (msgDiv) {
+                msgDiv.querySelector('.message-bubble').after(optionsDiv);
+            } else {
+                stocksbotMessages.appendChild(optionsDiv);
+            }
+            stocksbotMessages.scrollTop = stocksbotMessages.scrollHeight;
+        } else {
+            addStocksbotMessage('bot', data.answer, false);
+            stocksbotHistory.push({ role: 'user', content: question });
+            stocksbotHistory.push({ role: 'assistant', content: data.answer });
+            if (data.resolved_company) {
+                console.log(`StocksBot resolved: ${data.resolved_company}`);
+            }
+        }
+    } catch (error) {
+        removeStocksbotTyping();
+        addStocksbotMessage('bot', 'Network error. Please try again.', true);
+    } finally {
+        stocksbotSendBtn.disabled = false;
+        stocksbotQuestion.disabled = false;
+        stocksbotQuestion.focus();
     }
-});
+}
 
-// ---------- AI CHIPS ----------
-const ollamaChip = document.getElementById('ollamaChip');
-const openaiChip = document.getElementById('openaiChip');
-
-if (ollamaChip) {
-    ollamaChip.addEventListener('click', async () => {
-        if (!currentFincode) return;
-        ollamaChip.classList.add('active');
-        if (openaiChip) openaiChip.classList.remove('active');
-        document.getElementById('aiSummaryContent').innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Loading Ollama analysis...</div>';
-        try {
-            const response = await fetch(`/company/${currentFincode}/ai-summary/`);
-            const data = await response.json();
-            document.getElementById('aiSummaryContent').innerHTML = data.summary || 'No response from Ollama.';
-        } catch (error) {
-            console.error('Ollama error:', error);
-            document.getElementById('aiSummaryContent').innerHTML = 'Ollama is not installed or not responding. Please use OpenAI.';
+if (stocksbotSendBtn) {
+    stocksbotSendBtn.addEventListener('click', sendStocksbotMessage);
+}
+if (stocksbotQuestion) {
+    stocksbotQuestion.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendStocksbotMessage();
         }
     });
 }
+
+document.querySelectorAll('.stocksbot-prompt-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+        stocksbotQuestion.value = this.textContent;
+        sendStocksbotMessage();
+    });
+});
+
+// ---------- AI CHIPS (OpenAI only) ----------
+const openaiChip = document.getElementById('openaiChip');
+
 if (openaiChip) {
     openaiChip.addEventListener('click', async () => {
         if (!currentFincode) return;
         openaiChip.classList.add('active');
-        if (ollamaChip) ollamaChip.classList.remove('active');
         document.getElementById('aiSummaryContent').innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Loading OpenAI analysis...</div>';
         try {
             const response = await fetch(`/company/${currentFincode}/openai-summary/`);
@@ -632,23 +627,11 @@ document.querySelectorAll('.tab-button').forEach(btn => {
 });
 
 const lastTab = localStorage.getItem('lastActiveTab');
-if (lastTab && ['overview', 'financials', 'news', 'analysis'].includes(lastTab)) {
+if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
     setActiveTab(lastTab);
 } else {
     setActiveTab('overview');
 }
-
-// ---------- SUGGESTED PROMPTS ----------
-function attachPromptListeners() {
-    document.querySelectorAll('.prompt-chip').forEach(chip => {
-        chip.removeEventListener('click', chip._listener);
-        const handler = () => { aiQuestion.value = chip.textContent; aiQuestion.focus(); };
-        chip.addEventListener('click', handler);
-        chip._listener = handler;
-    });
-}
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachPromptListeners);
-else attachPromptListeners();
 
 // ---------- UTILITY ----------
 function escapeHtml(str) {

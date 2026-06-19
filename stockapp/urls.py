@@ -19,7 +19,9 @@ from stocks.views import (
     logout_view,
     help_page,
     default_companies,
-    tradingview_data
+    tradingview_data,
+    stocksbot_chat,
+    stocksbot_page,          # <-- NEW
 )
 
 urlpatterns = [
@@ -37,10 +39,11 @@ urlpatterns = [
     path("company-shareholding/<int:fincode>/", company_shareholding, name="company_shareholding"),
     path("company/<int:fincode>/corporate-actions/", company_corporate_actions, name="company_corporate_actions"),
     path("test-ollama/", test_ollama, name="test_ollama"),
-    path("company/<int:fincode>/ai-summary/", company_ai_summary, name="company_ai_summary"),
+    # path("company/<int:fincode>/ai-summary/", company_ai_summary, name="company_ai_summary"),  # COMMENTED – Ollama disabled
     path("company/<int:fincode>/openai-summary/", company_openai_summary),
     path("company/<int:fincode>/chat/", company_chat, name="company_chat"),
     path("company/<int:fincode>/yfinance/", company_yfinance, name="company_yfinance"),
     path('search/default/', default_companies, name='default_companies'),
     path('api/tradingview/<int:fincode>/', tradingview_data, name='tradingview_data'),
-]
+    path('stocksbot/chat/', stocksbot_chat, name='stocksbot_chat'),
+    path('stocksbot/', stocksbot_page, name='stocksbot_page'),]

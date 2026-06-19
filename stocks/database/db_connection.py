@@ -10,8 +10,8 @@ def get_connection():
     The caller MUST close the connection and cursor after use.
     """
     return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        database=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD")
+        host=os.getenv("ACCORD_DB_HOST"),
+        database=os.getenv("ACCORD_DB_NAME"),
+        user=os.getenv("ACCORD_DB_USER"),
+        password=os.getenv("ACCORD_DB_PASSWORD")
     )

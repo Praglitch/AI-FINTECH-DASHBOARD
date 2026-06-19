@@ -1,5 +1,5 @@
 from django.db import models
-# from pgvector.django import VectorField   # uncomment after pip install pgvector
+from pgvector.django import VectorField   
 
 class AnnouncementPdfCache(models.Model):
     newsid = models.CharField(max_length=100, unique=True)
@@ -46,3 +46,14 @@ class AnnouncementChunk(models.Model):
 
     def __repr__(self):
         return f"<AnnouncementChunk(newsid={self.pdf.newsid}, index={self.chunk_index})>"
+    
+    embedding = VectorField(dimensions=1536, null=True, blank=True)
+
+    class Meta:
+        ordering = ['pdf', 'chunk_index']
+        indexes = [
+            models.Index(fields=['pdf', 'chunk_index']),
+        ]
+
+    def __str__(self):
+        return f"{self.pdf.newsid} - Chunk {self.chunk_index}"

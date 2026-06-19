@@ -1,6 +1,8 @@
 import json
 import requests
 import os
+import re
+import difflib
 from openai import OpenAI
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -122,41 +124,10 @@ def test_ollama(request):
     return JsonResponse({"response": data["response"]})
 
 
-# COMPANY AI SUMMARY - OLLAMA
+# COMPANY AI SUMMARY - OLLAMA (DISABLED)
 @login_required
 def company_ai_summary(request, fincode):
-    company = get_company_details_data(fincode)
-    financials = get_company_financials_data(fincode)
-    shareholding = get_company_shareholding_data(fincode)
-    market = get_company_market_data(fincode)
-
-    prompt = f"""
-    Analyze this company.
-
-    Company: {company}
-    Financials: {financials}
-    Shareholding: {shareholding}
-    Market Snapshot: {market}
-
-    Give:
-    1. Business Overview
-    2. Strengths
-    3. Risks
-    4. Investor Takeaway
-
-    Keep response under 200 words.
-    """
-
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={"model": "tinyllama", "prompt": prompt, "stream": False},
-            timeout=120
-        )
-        data = response.json()
-        return JsonResponse({"summary": data["response"]})
-    except Exception as e:
-        return JsonResponse({"summary": f"Ollama error: {str(e)}. Please use OpenAI."})
+    return JsonResponse({"summary": "Ollama is temporarily disabled. Please use OpenAI for company summaries."})
 
 
 # COMPANY AI SUMMARY - OPENAI
@@ -190,7 +161,7 @@ def company_openai_summary(request, fincode):
     return JsonResponse({"summary": response.choices[0].message.content})
 
 
-# RAG COMPANY CHAT
+# RAG COMPANY CHAT (SCOPED TO SELECTED COMPANY)
 @login_required
 @csrf_exempt
 def company_chat(request, fincode):
@@ -253,6 +224,226 @@ You are an Indian stock market analyst.
     return JsonResponse({"answer": response.choices[0].message.content})
 
 
+# STOCKSBOT – UNRESTRICTED CHAT (NEW)
+@login_required
+@csrf_exempt
+def stocksbot_chat(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    try:
+        body = json.loads(request.body)
+        question = body.get("question", "").strip()
+        history = body.get("history", [])
+        provided_fincode = body.get("fincode", None)
+
+        if not question:
+            return JsonResponse({"error": "Question is required"}, status=400)
+
+        is_etf_query = "etf" in question.lower()
+
+        # ---- Helper: extract company name from a text ----
+        def extract_company_from_text(text):
+            # Remove common leading phrases
+            cleaned = re.sub(r'^(tell me about|what about|how is|is|compare|explain|details of|information on|data for|give me info on|what are the|what is the|what is|what are)\s+', '', text, flags=re.IGNORECASE)
+            cleaned = re.sub(r'[^\w\s]', '', cleaned)
+            cleaned = re.sub(r"'s\b", '', cleaned)
+
+            # Remove topic words and stopwords
+            topic_words = ['risks', 'risk', 'performance', 'financials', 'shareholding', 'dividend', 'pe', 'ratio', 'news', 'announcements', 'company', 'stock', 'etf', 'fund', 'analysis', 'outlook', 'valuation']
+            stopwords = ['of', 'for', 'on', 'the', 'and', 'is', 'are', 'what', 'how', 'why', 'when', 'which', 'who', 'whom', 'whose']
+
+            words = cleaned.split()
+            # Remove topic words and stopwords
+            filtered = [w for w in words if w.lower() not in topic_words and w.lower() not in stopwords]
+            query = ' '.join(filtered) if filtered else None
+
+            # If nothing remains, try preposition-based extraction
+            if not query or len(query) < 2:
+                prepositions = ['in', 'of', 'for', 'about', 'on']
+                for i, word in enumerate(words):
+                    if word.lower() in prepositions and i + 1 < len(words):
+                        after = ' '.join(words[i+1:])
+                        after_words = after.split()
+                        after_filtered = [w for w in after_words if w.lower() not in topic_words and w.lower() not in stopwords]
+                        if after_filtered:
+                            query = ' '.join(after_filtered)
+                            break
+
+            # If still nothing, take last 3 words (filtered)
+            if not query or len(query) < 2:
+                last_words = [w for w in reversed(words) if w.lower() not in topic_words and w.lower() not in stopwords][:3]
+                if last_words:
+                    query = ' '.join(reversed(last_words))
+                else:
+                    query = None
+
+            return query
+
+        # ---- If a specific fincode is provided (from clarification) ----
+        if provided_fincode:
+            fincode = provided_fincode
+            company = get_company_details_data(fincode)
+            if not company:
+                return JsonResponse({"error": "Invalid company"}, status=404)
+            company_name = company["compname"]
+            # Store in a variable, not session
+            current_company = (fincode, company_name)
+
+        else:
+            # ---- Try to extract company from the current question ----
+            company_query = extract_company_from_text(question)
+
+            # ---- If not found, look at previous user questions in history ----
+            if not company_query or len(company_query) < 2:
+                # Check history for previous user messages (reverse order)
+                for msg in reversed(history):
+                    if msg.get("role") == "user":
+                        prev_query = extract_company_from_text(msg.get("content", ""))
+                        if prev_query and len(prev_query) >= 2:
+                            company_query = prev_query
+                            break
+
+            # ---- If still no company, ask user to specify ----
+            if not company_query or len(company_query) < 2:
+                return JsonResponse({
+                    "answer": "I couldn't identify a company in your question. Could you please specify which company you're asking about? (e.g., 'Tell me about Reliance Industries' or 'What are the risks of Tata Steel?')",
+                    "needs_clarification": False
+                })
+
+            # ---- Search for the company ----
+            search_results = search_company_data(company_query)
+
+            if not search_results:
+                # Try each word individually
+                parts = company_query.split()
+                for part in parts:
+                    if len(part) > 2:
+                        search_results = search_company_data(part)
+                        if search_results:
+                            break
+
+            if not search_results:
+                return JsonResponse({
+                    "answer": f"I couldn't find a company matching '{company_query}'. Could you please check the spelling or try a different name?",
+                    "needs_clarification": False
+                })
+
+            from difflib import SequenceMatcher
+            def similarity(a, b):
+                return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+            for res in search_results:
+                res['score'] = max(
+                    similarity(res['compname'], company_query),
+                    similarity(res['symbol'], company_query) if res['symbol'] else 0
+                )
+
+            search_results.sort(key=lambda x: x['score'], reverse=True)
+            best_match = search_results[0]
+
+            # ---- Clarification if multiple matches ----
+            should_clarify = False
+            if len(search_results) > 1:
+                if best_match['score'] < 0.6 or len(company_query.split()) <= 2:
+                    should_clarify = True
+                if len(search_results) >= 2 and (search_results[0]['score'] - search_results[1]['score']) < 0.1:
+                    should_clarify = True
+
+            if should_clarify:
+                options = []
+                for r in search_results[:5]:
+                    options.append({
+                        "name": r["compname"],
+                        "symbol": r["symbol"] or "N/A",
+                        "fincode": r["fincode"]
+                    })
+                msg = "I found multiple companies matching your query. Which one did you mean?"
+                if is_etf_query:
+                    msg = "I don't have specific ETF data, but here are the companies I found. Please select one for detailed analysis:"
+                return JsonResponse({
+                    "needs_clarification": True,
+                    "message": msg,
+                    "options": options,
+                    "is_etf_query": is_etf_query
+                })
+
+            fincode = best_match["fincode"]
+            company_name = best_match["compname"]
+
+        # ---- At this point we have fincode and company_name ----
+        # (No session storage – we rely on history from the frontend)
+
+        context = build_context(question, fincode)
+
+        history_text = ""
+        for msg in history[-4:]:
+            role = "User" if msg["role"] == "user" else "Assistant"
+            history_text += f"{role}: {msg['content']}\n"
+
+        if is_etf_query:
+            etf_note = "Note: The user asked about an ETF, but we don't have ETF-specific data. We are providing analysis for the selected company instead."
+        else:
+            etf_note = ""
+
+        prompt = f"""
+You are an Indian stock market analyst.
+
+Previous conversation:
+{history_text if history_text else "(No previous conversation)"}
+
+Current USER QUESTION:
+{question}
+
+Company resolved: {company_name} (fincode: {fincode})
+
+{etf_note}
+
+CONTEXT (financials, market, shareholding, news, announcements, PDFs):
+{context}
+
+INSTRUCTIONS:
+- Answer using **markdown** for readability.
+- Use `**bold**` for numbers.
+- Use bullet points (`-`) for lists.
+- Use headings (`###`) for sections like "Financial Health", "Valuation", "Strengths & Risks", "Verdict".
+- If the user asked about an ETF, clarify at the start that we don't have ETF data and this is the company analysis.
+- If you don't know something, say so clearly.
+"""
+
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+You are an Indian stock market analyst.
+
+## Output Format:
+- Use **markdown**: bold, bullet points, headings (`###`).
+- Structure investment answers with sections: Financial Health, Valuation, Strengths & Risks, Verdict.
+
+## Rules:
+- Use only the provided context.
+- Cite numbers in **bold**.
+- For investment questions, give a balanced view with a disclaimer.
+- For follow‑ups, be concise.
+"""
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3
+        )
+        answer = response.choices[0].message.content
+
+        return JsonResponse({"answer": answer, "resolved_company": company_name, "fincode": fincode})
+
+    except Exception as e:
+        print(f"StocksBot error: {e}")
+        return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)    
+    
+    
 # YAHOO FINANCE DATA
 @login_required
 def company_yfinance(request, fincode):
@@ -292,7 +483,6 @@ def tradingview_data(request, fincode):
     return JsonResponse({'s': 'ok', 'data': chart_data})
 
 
-
 # LOGOUT
 def logout_view(request):
     logout(request)
@@ -303,3 +493,7 @@ def logout_view(request):
 @login_required
 def help_page(request):
     return render(request, 'help.html')
+
+@login_required
+def stocksbot_page(request):
+    return render(request, 'stocksbot.html')

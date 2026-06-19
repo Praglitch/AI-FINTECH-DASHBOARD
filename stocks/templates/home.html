@@ -155,7 +155,6 @@
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-10px); opacity: 1; } }
         .chat-welcome { margin-bottom: 16px; }
-        /* Chart container visibility */
         .chart-container { display: none; }
         .chart-container.active { display: block; }
     </style>
@@ -183,6 +182,11 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            <!-- StocksBot button with label -->
+            <a href="/stocksbot/" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium">
+                <span class="material-symbols-outlined text-[20px]">chat</span>
+                StocksBot
+            </a>
             <div class="relative">
                 <button id="settingsBtn" class="p-2 rounded-full hover:bg-surface-container-highest transition-colors">
                     <span class="material-symbols-outlined text-on-surface-variant">settings</span>
@@ -228,6 +232,7 @@
                         <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news">
                             <span class="material-symbols-outlined">newspaper</span> News
                         </button>
+                        <!-- AI Analysis last -->
                         <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis">
                             <span class="material-symbols-outlined">auto_awesome</span> AI Analysis
                         </button>
@@ -423,35 +428,19 @@
                             </div>
                         </div>
 
-                        <!-- AI Analysis Tab -->
+                        <!-- AI Analysis Tab (LAST) -->
                         <div id="analysisTab" class="tab-content">
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 gap-6">
                                 <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
                                     <div class="flex justify-between items-center mb-4">
-                                        <h3 class="font-h2 text-h2 flex items-center gap-2"><span class="material-symbols-outlined text-primary">auto_awesome</span> AI Analysis</h3>
+                                        <h3 class="font-h2 text-h2 flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary">auto_awesome</span> AI Analysis
+                                        </h3>
                                         <div class="flex gap-2">
-                                            <button id="ollamaChip" class="ai-chip px-3 py-1 rounded-full bg-surface-container-high hover:bg-surface-container-highest transition text-sm">Ollama</button>
                                             <button id="openaiChip" class="ai-chip px-3 py-1 rounded-full bg-primary text-on-primary transition text-sm">OpenAI</button>
                                         </div>
                                     </div>
                                     <div id="aiSummaryContent" class="ai-summary-text text-on-surface-variant ai-scroll">Loading AI analysis...</div>
-                                </div>
-                                <div class="bg-surface-container border border-outline-variant rounded-xl p-4 flex flex-col h-[450px]">
-                                    <h3 class="font-h2 text-h2 mb-2">💬 AI Research Copilot</h3>
-                                    <p class="text-on-surface-variant text-sm mb-2">Ask anything about this company. The assistant remembers the conversation.</p>
-                                    <div id="chatMessages" class="flex-1 overflow-y-auto space-y-3 mb-3">
-                                        <div class="chat-welcome bg-surface-container-high p-3 rounded-xl"><p class="text-body text-on-surface-variant">👋 Hello! I'm your AI research assistant. Ask me about financials, announcements, shareholding, market data, or anything else about this company.</p></div>
-                                    </div>
-                                    <div class="chat-input-area flex gap-2">
-                                        <textarea id="aiQuestion" class="flex-1 bg-background border border-outline-variant rounded-xl p-2 resize-none min-h-[40px] focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Ask a follow-up question..." rows="1"></textarea>
-                                        <button id="askAIButton" class="bg-primary text-on-primary px-4 py-2 rounded-xl hover:opacity-90 transition text-sm">Send</button>
-                                    </div>
-                                    <div class="suggested-prompts flex flex-wrap gap-2 mt-3">
-                                        <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">What are the risks?</button>
-                                        <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">Compare with last quarter</button>
-                                        <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">Should I buy?</button>
-                                        <button class="prompt-chip bg-surface-container-high border border-outline-variant px-3 py-1 rounded-full hover:border-primary hover:text-primary transition text-xs">Explain debt levels</button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -462,7 +451,7 @@
         </div> <!-- end dashboardContent -->
     </main>
 
-    <!-- Bottom Navigation (mobile only) -->
+    <!-- Bottom Navigation (mobile only) – no StocksBot here -->
     <nav id="mobileNav" class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant z-50">
         <button class="tab-button flex flex-col items-center text-primary" data-tab="overview">
             <span class="material-symbols-outlined">dashboard</span>
@@ -476,6 +465,7 @@
             <span class="material-symbols-outlined">newspaper</span>
             <span class="text-[10px]">News</span>
         </button>
+        <!-- AI Analysis last -->
         <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="analysis">
             <span class="material-symbols-outlined">auto_awesome</span>
             <span class="text-[10px]">AI</span>
@@ -487,16 +477,11 @@
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.umd.min.js"></script>
 
-    <!-- Lightweight Charts -->
     <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-
-    <!-- ECharts -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 
-    <!-- Chart scripts -->
     <script src="{% static 'js/lightweight-chart.js' %}"></script>
     <script src="{% static 'js/echarts-chart.js' %}"></script>
-
     <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>

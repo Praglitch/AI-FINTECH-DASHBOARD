@@ -14,28 +14,22 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# ---------- SECURITY ----------
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set DEBUG=True in .env for local, DEBUG=False for production
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['54.225.113.65', 'localhost', '127.0.0.1']
 
-# Application definition
-
+# ---------- Application definition ----------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -75,25 +69,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'stockapp.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# ---------- Database ----------
+# All credentials now come from environment variables
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "fintech_ai",
-        "USER": "pratham",
-        "PASSWORD": "pratham123",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv('DB_NAME', 'fintech_ai'),
+        "USER": os.getenv('DB_USER', 'pratham'),
+        "PASSWORD": os.getenv('DB_PASSWORD'),
+        "HOST": os.getenv('DB_HOST', 'localhost'),
+        "PORT": os.getenv('DB_PORT', '5432'),
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
+# ---------- Password validation ----------
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -109,24 +98,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
+# ---------- Internationalization ----------
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
+# ---------- Static files ----------
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# ---------- Authentication ----------
 LOGIN_URL = '/'
 SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
