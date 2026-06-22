@@ -232,7 +232,6 @@
                         <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news">
                             <span class="material-symbols-outlined">newspaper</span> News
                         </button>
-                        <!-- AI Analysis last -->
                         <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis">
                             <span class="material-symbols-outlined">auto_awesome</span> AI Analysis
                         </button>
@@ -340,59 +339,59 @@
                                     </div>
                                 </div>
                                 <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
-
-
                                     <!-- Chart Section -->
-<div class="bg-surface-container border border-outline-variant rounded-xl p-4">
-    <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-        <h3 class="font-h2 text-h2">Stock Price Trend</h3>
-        <div class="flex flex-wrap items-center gap-2">
-            <select id="periodSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
-                <option value="1d">1D</option>
-                <option value="5d">5D</option>
-                <option value="1mo">1M</option>
-                <option value="3mo">3M</option>
-                <option value="6mo">6M</option>
-                <option value="1y" selected>1Y</option>
-                <option value="2y">2Y</option>
-                <option value="5y">5Y</option>
-            </select>
-            <select id="intervalSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
-                <option value="1m">1 Minute</option>
-                <option value="5m">5 Minutes</option>
-                <option value="15m">15 Minutes</option>
-                <option value="30m">30 Minutes</option>
-                <option value="1h">1 Hour</option>
-                <option value="1d" selected>Daily</option>
-                <option value="1wk">Weekly</option>
-                <option value="1mo">Monthly</option>
-            </select>
-            <button id="refreshChartBtn" class="bg-primary text-on-primary px-3 py-1 rounded text-sm hover:opacity-90 transition">
-                Refresh
-            </button>
-        </div>
-    </div>
+                                    <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                                        <h3 class="font-h2 text-h2">Stock Price Trend</h3>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <select id="periodSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
+                                                <option value="1d">1D</option>
+                                                <option value="5d">5D</option>
+                                                <option value="1mo">1M</option>
+                                                <option value="3mo">3M</option>
+                                                <option value="6mo">6M</option>
+                                                <option value="1y" selected>1Y</option>
+                                                <option value="2y">2Y</option>
+                                                <option value="5y">5Y</option>
+                                            </select>
+                                            <select id="intervalSelect" class="bg-surface-container-high border border-outline-variant rounded px-2 py-1 text-sm">
+                                                <option value="1m">1 Minute</option>
+                                                <option value="5m">5 Minutes</option>
+                                                <option value="15m">15 Minutes</option>
+                                                <option value="30m">30 Minutes</option>
+                                                <option value="1h">1 Hour</option>
+                                                <option value="1d" selected>Daily</option>
+                                                <option value="1wk">Weekly</option>
+                                                <option value="1mo">Monthly</option>
+                                            </select>
+                                            <button id="refreshChartBtn" class="bg-primary text-on-primary px-3 py-1 rounded text-sm hover:opacity-90 transition">
+                                                Refresh
+                                            </button>
+                                        </div>
+                                    </div>
 
-    <!-- Indicator Checkboxes -->
-    <div class="flex flex-wrap items-center gap-4 mb-4 text-sm">
-        <span class="font-label text-on-surface-variant">Indicators:</span>
-        <label class="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" id="indicator-ma" checked class="accent-primary"> MA
-        </label>
-        <label class="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" id="indicator-bb" class="accent-primary"> Bollinger Bands
-        </label>
-        <label class="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" id="indicator-rsi" checked class="accent-primary"> RSI
-        </label>
-        <label class="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" id="indicator-macd" class="accent-primary"> MACD
-        </label>
-    </div>
+                                    <!-- Indicator Checkboxes -->
+                                    <div class="flex flex-wrap items-center gap-4 mb-4 text-sm">
+                                        <span class="font-label text-on-surface-variant">Indicators:</span>
+                                        <label class="flex items-center gap-1 cursor-pointer">
+                                            <input type="checkbox" id="indicator-ma" checked class="accent-primary"> MA
+                                        </label>
+                                        <label class="flex items-center gap-1 cursor-pointer">
+                                            <input type="checkbox" id="indicator-bb" class="accent-primary"> Bollinger Bands
+                                        </label>
+                                        <label class="flex items-center gap-1 cursor-pointer">
+                                            <input type="checkbox" id="indicator-rsi" checked class="accent-primary"> RSI
+                                        </label>
+                                        <label class="flex items-center gap-1 cursor-pointer">
+                                            <input type="checkbox" id="indicator-macd" class="accent-primary"> MACD
+                                        </label>
+                                    </div>
 
-    <!-- ECharts Container -->
-    <div id="echarts-container" style="height: 520px; width: 100%;"></div>
-</div>
+                                    <!-- ECharts Container -->
+                                    <div id="echarts-container" style="height: 520px; width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- News Tab -->
                         <div id="newsTab" class="tab-content">
                             <div class="grid grid-cols-1 gap-6">
@@ -420,7 +419,7 @@
                             </div>
                         </div>
 
-                        <!-- AI Analysis Tab (LAST) -->
+                        <!-- AI Analysis Tab -->
                         <div id="analysisTab" class="tab-content">
                             <div class="grid grid-cols-1 gap-6">
                                 <div class="bg-surface-container border border-outline-variant rounded-xl p-4">
