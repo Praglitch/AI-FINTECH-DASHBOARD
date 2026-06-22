@@ -223,16 +223,17 @@
                         <p class="font-label text-label text-on-surface-variant">Strategic Research</p>
                     </div>
                     <nav class="flex flex-col gap-1">
-                        <button class="tab-button flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label text-label transition-all" data-tab="overview">
+                        <!-- onclick added to each tab button -->
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label text-label transition-all" data-tab="overview" onclick="setActiveTab('overview')">
                             <span class="material-symbols-outlined">dashboard</span> Overview
                         </button>
-                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="financials">
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="financials" onclick="setActiveTab('financials')">
                             <span class="material-symbols-outlined">bar_chart</span> Financials
                         </button>
-                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news">
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="news" onclick="setActiveTab('news')">
                             <span class="material-symbols-outlined">newspaper</span> News
                         </button>
-                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis">
+                        <button class="tab-button flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg font-label text-label transition-all" data-tab="analysis" onclick="setActiveTab('analysis')">
                             <span class="material-symbols-outlined">auto_awesome</span> AI Analysis
                         </button>
                     </nav>
@@ -368,7 +369,6 @@
                                             </button>
                                         </div>
                                     </div>
-
                                     <!-- Indicator Checkboxes -->
                                     <div class="flex flex-wrap items-center gap-4 mb-4 text-sm">
                                         <span class="font-label text-on-surface-variant">Indicators:</span>
@@ -385,13 +385,11 @@
                                             <input type="checkbox" id="indicator-macd" class="accent-primary"> MACD
                                         </label>
                                     </div>
-
                                     <!-- ECharts Container -->
                                     <div id="echarts-container" style="height: 520px; width: 100%;"></div>
                                 </div>
                             </div>
                         </div>
-
                         <!-- News Tab -->
                         <div id="newsTab" class="tab-content">
                             <div class="grid grid-cols-1 gap-6">
@@ -442,25 +440,7 @@
         </div> <!-- end dashboardContent -->
     </main>
 
-    <!-- Bottom Navigation (mobile only) -->
-    <nav id="mobileNav" class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant z-50">
-        <button class="tab-button flex flex-col items-center text-primary" data-tab="overview">
-            <span class="material-symbols-outlined">dashboard</span>
-            <span class="text-[10px]">Overview</span>
-        </button>
-        <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="financials">
-            <span class="material-symbols-outlined">bar_chart</span>
-            <span class="text-[10px]">Financials</span>
-        </button>
-        <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="news">
-            <span class="material-symbols-outlined">newspaper</span>
-            <span class="text-[10px]">News</span>
-        </button>
-        <button class="tab-button flex flex-col items-center text-on-surface-variant" data-tab="analysis">
-            <span class="material-symbols-outlined">auto_awesome</span>
-            <span class="text-[10px]">AI</span>
-        </button>
-    </nav>
+    <!-- No mobile navigation -->
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
