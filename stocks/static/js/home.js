@@ -123,46 +123,6 @@ function resetToEmptyState() {
 
 backToEmptyBtn.addEventListener('click', resetToEmptyState);
 
-// ---------- CHART TYPE SELECTOR ----------
-let selectedChartType = 'advanced';
-
-function switchChartType(type) {
-    if (window.echartsInstance) {
-        window.echartsInstance.dispose();
-        window.echartsInstance = null;
-    }
-    if (window.lwChart) {
-        const lwContainer = document.getElementById('lw-chart');
-        if (lwContainer) lwContainer.innerHTML = '';
-        window.lwChart = null;
-    }
-    if (priceChart) {
-        priceChart.destroy();
-        priceChart = null;
-    }
-
-    document.querySelectorAll('.chart-container').forEach(el => el.classList.remove('active'));
-    document.getElementById('chart-' + type).classList.add('active');
-
-    if (currentFincode) {
-        if (type === 'line') {
-            fetchChartData(document.getElementById('periodSelect').value, document.getElementById('intervalSelect').value);
-        } else if (type === 'candlestick') {
-            if (typeof initLightweightChart === 'function') {
-                initLightweightChart(currentFincode);
-            }
-        } else if (type === 'advanced') {
-            if (typeof initEChartsChart === 'function') {
-                initEChartsChart(currentFincode);
-            }
-        }
-    }
-}
-
-document.getElementById('chartTypeSelect').addEventListener('change', function() {
-    switchChartType(this.value);
-});
-
 // ---------- SELECT COMPANY ----------
 async function selectCompany(fincode) {
     currentFincode = fincode;
@@ -170,7 +130,7 @@ async function selectCompany(fincode) {
     dashboardContent.style.display = 'block';
     sidebar.style.display = 'flex';
 
-    setActiveTab('overview');
+    setActiveTab('financials');
     searchResults.classList.remove('visible');
     showLoadingPlaceholders();
 
@@ -206,17 +166,9 @@ async function selectCompany(fincode) {
             document.getElementById('marketValue').textContent = '₹ ' + (m.value || '--');
         }
 
-        const chartType = document.getElementById('chartTypeSelect').value;
-        if (chartType === 'line') {
-            fetchChartData(document.getElementById('periodSelect').value, document.getElementById('intervalSelect').value);
-        } else if (chartType === 'candlestick') {
-            if (typeof initLightweightChart === 'function') {
-                initLightweightChart(fincode);
-            }
-        } else if (chartType === 'advanced') {
-            if (typeof initEChartsChart === 'function') {
-                initEChartsChart(fincode);
-            }
+        // ---------- CHART: Only ECharts ----------
+        if (typeof initEChartsChart === 'function') {
+            initEChartsChart(fincode);
         }
 
         // Background data
@@ -316,67 +268,12 @@ async function selectCompany(fincode) {
     }
 }
 
-// ---------- CHART.JS ----------
-let priceChart = null;
-function renderPriceChart(chartData) {
-    const ctx = document.getElementById('priceChart');
-    if (!ctx) return;
-    if (priceChart) priceChart.destroy();
-    if (!chartData || chartData.length === 0) {
-        ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
-        return;
+// ---------- REFRESH CHART ----------
+document.getElementById('refreshChartBtn')?.addEventListener('click', function() {
+    if (currentFincode && typeof initEChartsChart === 'function') {
+        initEChartsChart(currentFincode);
     }
-    const dates = chartData.map(item => item.date);
-    const prices = chartData.map(item => item.close);
-    priceChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: dates, datasets: [{ label: 'Price', data: prices, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: '#f59e0b', pointBorderColor: '#ffffff' }] },
-        options: { responsive: true, maintainAspectRatio: true, interaction: { mode: 'index', intersect: false, axis: 'x' }, plugins: { tooltip: { mode: 'index', intersect: false, callbacks: { label: (context) => `₹ ${context.raw.toFixed(2)}` }, backgroundColor: 'rgba(0,0,0,0.8)', titleColor: '#f59e0b', bodyColor: '#ffffff', borderColor: '#f59e0b', borderWidth: 1 }, legend: { display: false } }, scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 6, color: '#cbd5e1' }, grid: { display: false } }, y: { ticks: { callback: (val) => '₹' + val.toFixed(0), color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.1)' } } } }
-    });
-    const canvas = document.getElementById('priceChart');
-    const handleMouseMove = (e) => {
-        if (!priceChart) return;
-        const activePoints = priceChart.getElementsAtEvent(e);
-        if (activePoints && activePoints.length > 0) {
-            const dataIndex = activePoints[0].dataIndex;
-            const price = prices[dataIndex];
-            const date = dates[dataIndex];
-            const yfCurrentPrice = document.getElementById('yfCurrentPrice');
-            if (yfCurrentPrice) yfCurrentPrice.innerHTML = `₹ ${price.toFixed(2)} <span style="font-size: 10px; color: #94a3b8;">(${date})</span>`;
-        } else {
-            if (window.originalCurrentPrice && document.getElementById('yfCurrentPrice')) document.getElementById('yfCurrentPrice').textContent = window.originalCurrentPrice;
-        }
-    };
-    const handleMouseLeave = () => { if (window.originalCurrentPrice && document.getElementById('yfCurrentPrice')) document.getElementById('yfCurrentPrice').textContent = window.originalCurrentPrice; };
-    canvas.removeEventListener('mousemove', handleMouseMove);
-    canvas.removeEventListener('mouseleave', handleMouseLeave);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
-}
-
-async function fetchChartData(period, interval) {
-    if (!currentFincode) return null;
-    try {
-        const response = await fetch(`/company/${currentFincode}/yfinance/?period=${period}&interval=${interval}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        if (data.available !== false && data.data && data.data.chart_data && data.data.chart_data.length) {
-            renderPriceChart(data.data.chart_data);
-            return data.data.chart_data;
-        }
-        return null;
-    } catch (error) { console.error('Chart fetch error:', error); showError('Failed to load chart data'); return null; }
-}
-
-async function refreshChart() {
-    const period = document.getElementById('periodSelect').value;
-    const interval = document.getElementById('intervalSelect').value;
-    await fetchChartData(period, interval);
-}
-
-document.getElementById('refreshChartBtn').addEventListener('click', refreshChart);
-document.getElementById('periodSelect').addEventListener('change', refreshChart);
-document.getElementById('intervalSelect').addEventListener('change', refreshChart);
+});
 
 // ---------- LOADING PLACEHOLDERS ----------
 function showLoadingPlaceholders() {

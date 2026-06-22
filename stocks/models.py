@@ -1,5 +1,5 @@
 from django.db import models
-from pgvector.django import VectorField   
+from pgvector.django import VectorField
 
 class AnnouncementPdfCache(models.Model):
     newsid = models.CharField(max_length=100, unique=True)
@@ -32,21 +32,6 @@ class AnnouncementChunk(models.Model):
     chunk_index = models.IntegerField()
     chunk_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # embedding = VectorField(dimensions=384, null=True, blank=True)  # for pgvector
-
-    class Meta:
-        ordering = ['pdf', 'chunk_index']
-        indexes = [
-            models.Index(fields=['pdf', 'chunk_index']),
-        ]
-
-    def __str__(self):
-        return f"{self.pdf.newsid} - Chunk {self.chunk_index}"
-
-    def __repr__(self):
-        return f"<AnnouncementChunk(newsid={self.pdf.newsid}, index={self.chunk_index})>"
-    
     embedding = VectorField(dimensions=1536, null=True, blank=True)
 
     class Meta:
@@ -57,3 +42,25 @@ class AnnouncementChunk(models.Model):
 
     def __str__(self):
         return f"{self.pdf.newsid} - Chunk {self.chunk_index}"
+
+
+# ---------- NEW: Price Data for OHLCV caching ----------
+class PriceData(models.Model):
+    symbol = models.CharField(max_length=30, db_index=True)
+    interval = models.CharField(max_length=5, db_index=True, default='1m')
+    timestamp = models.DateTimeField(db_index=True)
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    volume = models.BigIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('symbol', 'interval', 'timestamp')
+        indexes = [
+            models.Index(fields=['symbol', 'interval', 'timestamp']),
+        ]
+        ordering = ['symbol', 'interval', 'timestamp']
+
+    def __str__(self):
+        return f"{self.symbol} ({self.interval}) - {self.timestamp}"

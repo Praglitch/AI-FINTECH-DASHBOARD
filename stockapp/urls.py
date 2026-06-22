@@ -21,7 +21,8 @@ from stocks.views import (
     default_companies,
     tradingview_data,
     stocksbot_chat,
-    stocksbot_page,          # <-- NEW
+    stocksbot_page, 
+    price_data_api,         
 )
 
 urlpatterns = [
@@ -46,4 +47,5 @@ urlpatterns = [
     path('search/default/', default_companies, name='default_companies'),
     path('api/tradingview/<int:fincode>/', tradingview_data, name='tradingview_data'),
     path('stocksbot/chat/', stocksbot_chat, name='stocksbot_chat'),
-    path('stocksbot/', stocksbot_page, name='stocksbot_page'),]
+    path('stocksbot/', stocksbot_page, name='stocksbot_page'),
+    path('api/price/<str:symbol>/', price_data_api, name='price_data_api'),]

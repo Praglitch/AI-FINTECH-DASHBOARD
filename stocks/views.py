@@ -21,6 +21,7 @@ from .services.announcement_service import get_company_announcements_data
 from .services.corporate_actions_service import get_company_corporate_actions_data
 from .services.yfinance_services import get_yfinance_data
 from .services.ai_retrieval_service import build_context
+from .models import PriceData
 
 
 # LOGIN PAGE
@@ -481,6 +482,40 @@ def tradingview_data(request, fincode):
             dt = datetime.strptime(item['date'], '%Y-%m-%d')
         item['time'] = int(dt.timestamp())
     return JsonResponse({'s': 'ok', 'data': chart_data})
+
+
+
+# ---------- PRICE DATA API ----------
+@login_required
+def price_data_api(request, symbol):
+    """
+    API endpoint to serve raw price data from the local PriceData table.
+    Query params:
+    - interval: '1m', '1d', etc. (default: '1m')
+    - start: YYYY-MM-DD (optional)
+    - end: YYYY-MM-DD (optional)
+    - limit: number of latest candles (optional)
+    """
+    interval = request.GET.get('interval', '1m')
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    limit = request.GET.get('limit')
+
+    qs = PriceData.objects.filter(symbol=symbol, interval=interval)
+
+    if start:
+        qs = qs.filter(timestamp__date__gte=start)
+    if end:
+        qs = qs.filter(timestamp__date__lte=end)
+
+    qs = qs.order_by('timestamp')
+
+    if limit:
+        qs = qs[:int(limit)]
+
+    data = list(qs.values('timestamp', 'open', 'high', 'low', 'close', 'volume'))
+    return JsonResponse(data, safe=False)
+
 
 
 # LOGOUT
