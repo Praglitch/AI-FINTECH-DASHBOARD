@@ -522,18 +522,39 @@ function setActiveTab(tabName) {
     localStorage.setItem('lastActiveTab', tabName);
 }
 
-document.querySelectorAll('.tab-button').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        const tabName = this.dataset.tab;
-        if (tabName) setActiveTab(tabName);
+function initTabs() {
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.removeEventListener('click', handleTabClick); // avoid duplicates
+        btn.addEventListener('click', handleTabClick);
     });
-});
+}
 
-const lastTab = localStorage.getItem('lastActiveTab');
-if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
-    setActiveTab(lastTab);
+function handleTabClick(e) {
+    const tabName = this.dataset.tab;
+    if (tabName) setActiveTab(tabName);
+}
+
+// Ensure tabs are ready when DOM is fully loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        initTabs();
+        // Restore last active tab
+        const lastTab = localStorage.getItem('lastActiveTab');
+        if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
+            setActiveTab(lastTab);
+        } else {
+            setActiveTab('overview');
+        }
+    });
 } else {
-    setActiveTab('overview');
+    // DOM already loaded (e.g., if script runs after load)
+    initTabs();
+    const lastTab = localStorage.getItem('lastActiveTab');
+    if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
+        setActiveTab(lastTab);
+    } else {
+        setActiveTab('overview');
+    }
 }
 
 // ---------- UTILITY ----------
