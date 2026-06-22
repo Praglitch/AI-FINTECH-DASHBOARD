@@ -212,34 +212,40 @@ async function selectCompany(fincode) {
         }).catch(e => console.warn('financials error', e));
 
         fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
-            const container = document.getElementById('newsList');
-            if (data.available === false || !data.data || data.data.length === 0) {
-                container.innerHTML = '<div class="empty-state">No news available</div>';
-                return;
-            }
-            const news = data.data;
-            container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
-        }).catch(e => console.warn('news error', e));
+    console.log('📰 News data received:', data);   // debug
+    const container = document.getElementById('newsList');
+    if (data.available === false || !data.data || data.data.length === 0) {
+        container.innerHTML = '<div class="empty-state">No news available</div>';
+        return;
+    }
+    const news = data.data;
+    container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    console.log('✅ News rendered, length:', container.innerHTML.length);
+}).catch(e => console.error('❌ News error:', e));
 
         fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
-            const container = document.getElementById('announcementsList');
-            if (data.available === false || !data.data || data.data.length === 0) {
-                container.innerHTML = '<div class="empty-state">No announcements available</div>';
-                return;
-            }
-            const announcements = data.data;
-            container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
-        }).catch(e => console.warn('announcements error', e));
+    console.log('📢 Announcements data:', data);
+    const container = document.getElementById('announcementsList');
+    if (data.available === false || !data.data || data.data.length === 0) {
+        container.innerHTML = '<div class="empty-state">No announcements available</div>';
+        return;
+    }
+    const announcements = data.data;
+    container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+    console.log('✅ Announcements rendered');
+}).catch(e => console.error('❌ Announcements error:', e));
 
         fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
-            const container = document.getElementById('actionsList');
-            if (data.available === false || !data.actions || data.actions.length === 0) {
-                container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
-                return;
-            }
-            const actions = data.actions;
-            container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
-        }).catch(e => console.warn('actions error', e));
+    console.log('📋 Actions data:', data);
+    const container = document.getElementById('actionsList');
+    if (data.available === false || !data.actions || data.actions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
+        return;
+    }
+    const actions = data.actions;
+    container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    console.log('✅ Actions rendered');
+}).catch(e => console.error('❌ Actions error:', e));
 
         fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
             if (data.available === false || !data.data) return;
