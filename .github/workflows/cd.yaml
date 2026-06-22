@@ -1,0 +1,67 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ uat, production ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract Jira issue key
+        id: jira
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          JIRA_KEY=$(echo "$COMMIT_MSG" | grep -oE '[A-Z]+-[0-9]+' | head -1)
+          echo "JIRA_KEY=$JIRA_KEY" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+
+          if [ "${{ github.ref_name }}" == "production" ]; then
+            DEPLOY_PATH="/home/$EC2_USER/stockapp_live"
+            SERVICE_NAME="gunicorn-stockapp-live"
+          else
+            DEPLOY_PATH="/home/$EC2_USER/stockapp_uat"
+            SERVICE_NAME="gunicorn-stockapp-uat"
+          fi
+
+          ssh $EC2_USER@$EC2_HOST << EOF
+            cd $DEPLOY_PATH
+            git pull origin ${{ github.ref_name }}
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+            sudo systemctl restart $SERVICE_NAME
+          EOF
+
+      - name: Update Jira status
+        if: steps.jira.outputs.JIRA_KEY != ''
+        env:
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_DOMAIN: ${{ secrets.JIRA_DOMAIN }}
+        run: |
+          JIRA_KEY="${{ steps.jira.outputs.JIRA_KEY }}"
+          if [ "${{ github.ref_name }}" == "production" ]; then
+            TRANSITION_ID="41"
+          else
+            TRANSITION_ID="31"
+          fi
+          curl -X PUT \
+            -H "Authorization: Basic $(echo -n $JIRA_EMAIL:$JIRA_TOKEN | base64)" \
+            -H "Content-Type: application/json" \
+            -d '{"transition":{"id":"'"$TRANSITION_ID"'"}}' \
+            "https://$JIRA_DOMAIN.atlassian.net/rest/api/2/issue/$JIRA_KEY/transitions"
