@@ -1,5 +1,6 @@
 // stockapp/static/js/home.js
 
+// ---------- DOM references ----------
 const searchInput = document.getElementById('companySearch');
 const searchResults = document.getElementById('searchResults');
 const clearButton = document.getElementById('clearSearch');
@@ -13,7 +14,7 @@ const backToEmptyBtn = document.getElementById('backToEmptyBtn');
 const noResults = document.getElementById('noResults');
 const dashboardContent = document.getElementById('dashboardContent');
 const sidebar = document.getElementById('sidebar');
-const mobileNav = document.getElementById('mobileNav');
+const mobileNav = document.getElementById('mobileNav'); // removed from HTML but keep reference safe
 
 let currentFincode = null;
 
@@ -62,20 +63,24 @@ if (helpBtn) helpBtn.addEventListener('click', () => window.location.href = '/he
 if (logoutDropdownBtn) logoutDropdownBtn.addEventListener('click', () => window.location.href = '/logout/');
 
 // ---------- SEARCH ----------
-searchInput.addEventListener('input', () => {
-    const query = searchInput.value.trim();
-    clearButton.style.display = query ? 'block' : 'none';
-    clearTimeout(window.searchTimeout);
-    window.searchTimeout = setTimeout(() => performSearch(), 500);
-});
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim();
+        if (clearButton) clearButton.style.display = query ? 'block' : 'none';
+        clearTimeout(window.searchTimeout);
+        window.searchTimeout = setTimeout(() => performSearch(), 500);
+    });
+}
 
-clearButton.addEventListener('click', () => {
-    searchInput.value = '';
-    clearButton.style.display = 'none';
-    searchResults.classList.remove('visible');
-    searchResults.innerHTML = '';
-    searchInput.focus();
-});
+if (clearButton) {
+    clearButton.addEventListener('click', () => {
+        searchInput.value = '';
+        clearButton.style.display = 'none';
+        searchResults.classList.remove('visible');
+        searchResults.innerHTML = '';
+        searchInput.focus();
+    });
+}
 
 async function performSearch() {
     const query = searchInput.value.trim();
@@ -99,7 +104,7 @@ async function performSearch() {
             item.innerHTML = `<div class="search-result-name">${company.compname}</div><div class="search-result-meta">${company.symbol || 'N/A'} • ${company.fincode}</div>`;
             item.onclick = () => {
                 searchInput.value = company.compname;
-                clearButton.style.display = 'block';
+                if (clearButton) clearButton.style.display = 'block';
                 selectCompany(company.fincode);
             };
             searchResults.appendChild(item);
@@ -117,11 +122,13 @@ function resetToEmptyState() {
     noResults.style.display = 'flex';
     currentFincode = null;
     searchInput.value = '';
-    clearButton.style.display = 'none';
+    if (clearButton) clearButton.style.display = 'none';
     searchResults.classList.remove('visible');
 }
 
-backToEmptyBtn.addEventListener('click', resetToEmptyState);
+if (backToEmptyBtn) {
+    backToEmptyBtn.addEventListener('click', resetToEmptyState);
+}
 
 // ---------- SELECT COMPANY ----------
 async function selectCompany(fincode) {
@@ -171,115 +178,118 @@ async function selectCompany(fincode) {
             initEChartsChart(fincode);
         }
 
-        // Background data
-        fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
-            if (data.available === false) {
-                ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
-                 'kpiPromoter','kpiPublic','kpiMutualFund','kpiFII'].forEach(id => {
-                    document.getElementById(id).textContent = 'N/A';
-                });
-                return;
-            }
-            const d = data.data;
-            ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
-             'kpiPromoter','kpiPublic','kpiMutualFund','kpiFII'].forEach(id => {
-                let val;
-                if (id.includes('Promoter')) val = d.promoter;
-                else if (id.includes('Public')) val = d.public;
-                else if (id.includes('MutualFund')) val = d.mutual_fund;
-                else if (id.includes('FPI') || id.includes('FII')) val = d.fpi;
-                document.getElementById(id).textContent = (val || '--') + '%';
-            });
-        }).catch(e => console.warn('shareholding error', e));
-
-        fetch(`/company/${fincode}/financials/`).then(r => r.json()).then(data => {
-            if (data.available === false) {
-                ['kpiRevenue','kpiPAT','finYearEnd','finRevenue','finOperatingProfit',
-                 'finPAT','finEPS','finDividend'].forEach(id => {
-                    document.getElementById(id).textContent = 'N/A';
-                });
-                return;
-            }
-            const d = data.data;
-            document.getElementById('kpiRevenue').textContent = formatNumber(d.net_sales);
-            document.getElementById('kpiPAT').textContent = formatNumber(d.profit_after_tax);
-            document.getElementById('finYearEnd').textContent = d.year_end || '--';
-            document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(d.net_sales);
-            document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(d.operating_profit);
-            document.getElementById('finPAT').textContent = '₹ ' + formatNumber(d.profit_after_tax);
-            document.getElementById('finEPS').textContent = d.reported_eps || '--';
-            document.getElementById('finDividend').textContent = (d.dividend_perc || '--') + '%';
-        }).catch(e => console.warn('financials error', e));
-
-        fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
-    console.log('📰 News data received:', data);   // debug
-    const container = document.getElementById('newsList');
-    if (data.available === false || !data.data || data.data.length === 0) {
-        container.innerHTML = '<div class="empty-state">No news available</div>';
-        return;
-    }
-    const news = data.data;
-    container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
-    console.log('✅ News rendered, length:', container.innerHTML.length);
-}).catch(e => console.error('❌ News error:', e));
-
-        fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
-    console.log('📢 Announcements data:', data);
-    const container = document.getElementById('announcementsList');
-    if (data.available === false || !data.data || data.data.length === 0) {
-        container.innerHTML = '<div class="empty-state">No announcements available</div>';
-        return;
-    }
-    const announcements = data.data;
-    container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
-    console.log('✅ Announcements rendered');
-}).catch(e => console.error('❌ Announcements error:', e));
-
-        fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
-    console.log('📋 Actions data:', data);
-    const container = document.getElementById('actionsList');
-    if (data.available === false || !data.actions || data.actions.length === 0) {
-        container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
-        return;
-    }
-    const actions = data.actions;
-    container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
-    console.log('✅ Actions rendered');
-}).catch(e => console.error('❌ Actions error:', e));
-
-        fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
-            if (data.available === false || !data.data) return;
-            const d = data.data;
-            if (d.current_price) {
-                document.getElementById('yfCurrentPrice').textContent = `₹ ${d.current_price}`;
-                window.originalCurrentPrice = `₹ ${d.current_price}`;
-            }
-            if (d.pe_ratio) document.getElementById('yfPE').textContent = d.pe_ratio;
-            if (d.fifty_two_week_high) document.getElementById('yfHigh').textContent = d.fifty_two_week_high;
-            if (d.fifty_two_week_low) document.getElementById('yfLow').textContent = d.fifty_two_week_low;
-            if (d.market_cap) document.getElementById('yfMarketCap').textContent = formatNumber(d.market_cap);
-            if (d.volume) document.getElementById('yfVolume').textContent = formatNumber(d.volume);
-        }).catch(e => console.warn('yfinance error', e));
-
-        fetch(`/company/${fincode}/openai-summary/`).then(r => r.json()).then(data => {
-            document.getElementById('aiSummaryContent').innerHTML = data.summary || 'No AI analysis available';
-        }).catch(e => {
-            console.warn('openai error', e);
-            document.getElementById('aiSummaryContent').innerHTML = 'AI summary temporarily unavailable.';
-        });
-
     } catch (error) {
         console.error('Critical data error:', error);
         showError('Unable to load company data');
     }
+
+    // ---------- BACKGROUND DATA (ALWAYS RUN, EVEN IF CHART FAILS) ----------
+    // Shareholding
+    fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
+        if (data.available === false) {
+            ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
+             'kpiPromoter','kpiPublic','kpiMutualFund','kpiFII'].forEach(id => {
+                document.getElementById(id).textContent = 'N/A';
+            });
+            return;
+        }
+        const d = data.data;
+        ['holdingPromoter','holdingPublic','holdingMutualFund','holdingFPI',
+         'kpiPromoter','kpiPublic','kpiMutualFund','kpiFII'].forEach(id => {
+            let val;
+            if (id.includes('Promoter')) val = d.promoter;
+            else if (id.includes('Public')) val = d.public;
+            else if (id.includes('MutualFund')) val = d.mutual_fund;
+            else if (id.includes('FPI') || id.includes('FII')) val = d.fpi;
+            document.getElementById(id).textContent = (val || '--') + '%';
+        });
+    }).catch(e => console.warn('shareholding error', e));
+
+    // Financials
+    fetch(`/company/${fincode}/financials/`).then(r => r.json()).then(data => {
+        if (data.available === false) {
+            ['kpiRevenue','kpiPAT','finYearEnd','finRevenue','finOperatingProfit',
+             'finPAT','finEPS','finDividend'].forEach(id => {
+                document.getElementById(id).textContent = 'N/A';
+            });
+            return;
+        }
+        const d = data.data;
+        document.getElementById('kpiRevenue').textContent = formatNumber(d.net_sales);
+        document.getElementById('kpiPAT').textContent = formatNumber(d.profit_after_tax);
+        document.getElementById('finYearEnd').textContent = d.year_end || '--';
+        document.getElementById('finRevenue').textContent = '₹ ' + formatNumber(d.net_sales);
+        document.getElementById('finOperatingProfit').textContent = '₹ ' + formatNumber(d.operating_profit);
+        document.getElementById('finPAT').textContent = '₹ ' + formatNumber(d.profit_after_tax);
+        document.getElementById('finEPS').textContent = d.reported_eps || '--';
+        document.getElementById('finDividend').textContent = (d.dividend_perc || '--') + '%';
+    }).catch(e => console.warn('financials error', e));
+
+        fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
+            const container = document.getElementById('newsList');
+            if (data.available === false || !data.data || data.data.length === 0) {
+                container.innerHTML = '<div class="empty-state">No news available</div>';
+                return;
+            }
+            const news = data.data;
+            container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+        }).catch(e => console.warn('news error', e));
+
+        fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
+            const container = document.getElementById('announcementsList');
+            if (data.available === false || !data.data || data.data.length === 0) {
+                container.innerHTML = '<div class="empty-state">No announcements available</div>';
+                return;
+            }
+            const announcements = data.data;
+            container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+        }).catch(e => console.warn('announcements error', e));
+
+        fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
+            const container = document.getElementById('actionsList');
+            if (data.available === false || !data.actions || data.actions.length === 0) {
+                container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
+                return;
+            }
+            const actions = data.actions;
+            container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+        }).catch(e => console.warn('actions error', e));
+
+    // Yahoo Finance
+    fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
+        if (data.available === false || !data.data) return;
+        const d = data.data;
+        if (d.current_price) {
+            document.getElementById('yfCurrentPrice').textContent = `₹ ${d.current_price}`;
+            window.originalCurrentPrice = `₹ ${d.current_price}`;
+        }
+        if (d.pe_ratio) document.getElementById('yfPE').textContent = d.pe_ratio;
+        if (d.fifty_two_week_high) document.getElementById('yfHigh').textContent = d.fifty_two_week_high;
+        if (d.fifty_two_week_low) document.getElementById('yfLow').textContent = d.fifty_two_week_low;
+        if (d.market_cap) document.getElementById('yfMarketCap').textContent = formatNumber(d.market_cap);
+        if (d.volume) document.getElementById('yfVolume').textContent = formatNumber(d.volume);
+    }).catch(e => console.warn('yfinance error', e));
+
+    // AI Summary (OpenAI)
+    fetch(`/company/${fincode}/openai-summary/`).then(r => r.json()).then(data => {
+        const container = document.getElementById('aiSummaryContent');
+        if (!container) return;
+        container.innerHTML = data.summary || 'No AI analysis available';
+    }).catch(e => {
+        console.warn('openai error', e);
+        document.getElementById('aiSummaryContent').innerHTML = 'AI summary temporarily unavailable.';
+    });
 }
 
 // ---------- REFRESH CHART ----------
-document.getElementById('refreshChartBtn')?.addEventListener('click', function() {
-    if (currentFincode && typeof initEChartsChart === 'function') {
-        initEChartsChart(currentFincode);
-    }
-});
+const refreshBtn = document.getElementById('refreshChartBtn');
+if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+        if (currentFincode && typeof initEChartsChart === 'function') {
+            initEChartsChart(currentFincode);
+        }
+    });
+}
 
 // ---------- LOADING PLACEHOLDERS ----------
 function showLoadingPlaceholders() {
@@ -522,39 +532,18 @@ function setActiveTab(tabName) {
     localStorage.setItem('lastActiveTab', tabName);
 }
 
-function initTabs() {
-    document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.removeEventListener('click', handleTabClick); // avoid duplicates
-        btn.addEventListener('click', handleTabClick);
+document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const tabName = this.dataset.tab;
+        if (tabName) setActiveTab(tabName);
     });
-}
+});
 
-function handleTabClick(e) {
-    const tabName = this.dataset.tab;
-    if (tabName) setActiveTab(tabName);
-}
-
-// Ensure tabs are ready when DOM is fully loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        initTabs();
-        // Restore last active tab
-        const lastTab = localStorage.getItem('lastActiveTab');
-        if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
-            setActiveTab(lastTab);
-        } else {
-            setActiveTab('overview');
-        }
-    });
+const lastTab = localStorage.getItem('lastActiveTab');
+if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
+    setActiveTab(lastTab);
 } else {
-    // DOM already loaded (e.g., if script runs after load)
-    initTabs();
-    const lastTab = localStorage.getItem('lastActiveTab');
-    if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
-        setActiveTab(lastTab);
-    } else {
-        setActiveTab('overview');
-    }
+    setActiveTab('overview');
 }
 
 // ---------- UTILITY ----------
