@@ -76,4 +76,4 @@ Use Gunicorn + Nginx on a VPS (e.g., AWS EC2). Set `DEBUG=False`, `ALLOWED_HOSTS
 - Vector search (pgvector) for semantic retrieval over PDF chunks.
 - Cross‑company comparison.
 - Watchlist / portfolio tracking.
-- Real‑time WebSocket updates.
+- Real‑time WebSocket updates.# SCRUM-6 test
