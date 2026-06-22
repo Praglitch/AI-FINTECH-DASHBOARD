@@ -29,6 +29,14 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['54.225.113.65', 'localhost', '127.0.0.1']
 
+# ---------- CSRF Trusted Origins (for both Live and UAT) ----------
+CSRF_TRUSTED_ORIGINS = [
+    'http://54.225.113.65',
+    'http://54.225.113.65:8001',
+    'http://localhost',
+    'http://127.0.0.1',
+]
+
 # ---------- Application definition ----------
 INSTALLED_APPS = [
     'django.contrib.admin',
