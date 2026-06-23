@@ -77,3 +77,5 @@ Use Gunicorn + Nginx on a VPS (e.g., AWS EC2). Set `DEBUG=False`, `ALLOWED_HOSTS
 - Cross‑company comparison.
 - Watchlist / portfolio tracking.
 - Real‑time WebSocket updates.
+
+# SCRUM-8 test
