@@ -78,4 +78,4 @@ Use Gunicorn + Nginx on a VPS (e.g., AWS EC2). Set `DEBUG=False`, `ALLOWED_HOSTS
 - Watchlist / portfolio tracking.
 - Real‑time WebSocket updates.
 
-# SCRUM-8 test
+# SCRUM-9 test# SCRUM-9 test
