@@ -3,6 +3,8 @@ import requests
 import os
 import re
 import difflib
+import yfinance as yf
+from django.utils import timezone
 from openai import OpenAI
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -484,6 +486,38 @@ def tradingview_data(request, fincode):
     return JsonResponse({'s': 'ok', 'data': chart_data})
 
 
+# ---------- LIVE PRICE (YAHOO FINANCE) ----------
+@login_required
+def live_price(request, symbol):
+    try:
+        ticker = yf.Ticker(f"{symbol}.NS")
+        data = ticker.history(period="1d")
+        if data.empty:
+            # Fallback to last available close
+            hist = ticker.history(period="5d")
+            if not hist.empty:
+                last_close = hist['Close'].iloc[-1]
+                return JsonResponse({
+                    'symbol': symbol,
+                    'price': round(last_close, 2),
+                    'source': 'yahoo (last close)',
+                    'fetched_at': timezone.now().isoformat()
+                })
+            return JsonResponse({'error': 'No data found'}, status=404)
+        current_price = data['Close'].iloc[-1]
+        return JsonResponse({
+            'symbol': symbol,
+            'price': round(current_price, 2),
+            'open': round(data['Open'].iloc[-1], 2) if not data['Open'].empty else None,
+            'high': round(data['High'].iloc[-1], 2) if not data['High'].empty else None,
+            'low': round(data['Low'].iloc[-1], 2) if not data['Low'].empty else None,
+            'volume': int(data['Volume'].iloc[-1]) if not data['Volume'].empty else None,
+            'source': 'yahoo',
+            'fetched_at': timezone.now().isoformat()
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 # ---------- PRICE DATA API ----------
 @login_required
@@ -515,7 +549,6 @@ def price_data_api(request, symbol):
 
     data = list(qs.values('timestamp', 'open', 'high', 'low', 'close', 'volume'))
     return JsonResponse(data, safe=False)
-
 
 
 # LOGOUT
