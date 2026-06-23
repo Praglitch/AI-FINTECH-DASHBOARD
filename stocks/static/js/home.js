@@ -1,6 +1,5 @@
 // stockapp/static/js/home.js
 
-// ---------- DOM references ----------
 const searchInput = document.getElementById('companySearch');
 const searchResults = document.getElementById('searchResults');
 const clearButton = document.getElementById('clearSearch');
@@ -14,7 +13,7 @@ const backToEmptyBtn = document.getElementById('backToEmptyBtn');
 const noResults = document.getElementById('noResults');
 const dashboardContent = document.getElementById('dashboardContent');
 const sidebar = document.getElementById('sidebar');
-const mobileNav = document.getElementById('mobileNav'); // removed from HTML but keep reference safe
+const mobileNav = document.getElementById('mobileNav');
 
 let currentFincode = null;
 
@@ -63,24 +62,20 @@ if (helpBtn) helpBtn.addEventListener('click', () => window.location.href = '/he
 if (logoutDropdownBtn) logoutDropdownBtn.addEventListener('click', () => window.location.href = '/logout/');
 
 // ---------- SEARCH ----------
-if (searchInput) {
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.trim();
-        if (clearButton) clearButton.style.display = query ? 'block' : 'none';
-        clearTimeout(window.searchTimeout);
-        window.searchTimeout = setTimeout(() => performSearch(), 500);
-    });
-}
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim();
+    clearButton.style.display = query ? 'block' : 'none';
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(() => performSearch(), 500);
+});
 
-if (clearButton) {
-    clearButton.addEventListener('click', () => {
-        searchInput.value = '';
-        clearButton.style.display = 'none';
-        searchResults.classList.remove('visible');
-        searchResults.innerHTML = '';
-        searchInput.focus();
-    });
-}
+clearButton.addEventListener('click', () => {
+    searchInput.value = '';
+    clearButton.style.display = 'none';
+    searchResults.classList.remove('visible');
+    searchResults.innerHTML = '';
+    searchInput.focus();
+});
 
 async function performSearch() {
     const query = searchInput.value.trim();
@@ -104,7 +99,7 @@ async function performSearch() {
             item.innerHTML = `<div class="search-result-name">${company.compname}</div><div class="search-result-meta">${company.symbol || 'N/A'} • ${company.fincode}</div>`;
             item.onclick = () => {
                 searchInput.value = company.compname;
-                if (clearButton) clearButton.style.display = 'block';
+                clearButton.style.display = 'block';
                 selectCompany(company.fincode);
             };
             searchResults.appendChild(item);
@@ -122,13 +117,11 @@ function resetToEmptyState() {
     noResults.style.display = 'flex';
     currentFincode = null;
     searchInput.value = '';
-    if (clearButton) clearButton.style.display = 'none';
+    clearButton.style.display = 'none';
     searchResults.classList.remove('visible');
 }
 
-if (backToEmptyBtn) {
-    backToEmptyBtn.addEventListener('click', resetToEmptyState);
-}
+backToEmptyBtn.addEventListener('click', resetToEmptyState);
 
 // ---------- LIVE PRICE ----------
 function fetchLivePrice(symbol) {
@@ -184,7 +177,7 @@ async function selectCompany(fincode) {
             document.getElementById('companyMD').textContent = c.mdir || 'N/A';
             document.getElementById('companyCS').textContent = c.cosec || 'N/A';
 
-            // Fetch live price if symbol exists
+            // ----- FETCH LIVE PRICE -----
             if (c.symbol) {
                 fetchLivePrice(c.symbol);
             }
@@ -251,35 +244,41 @@ async function selectCompany(fincode) {
         document.getElementById('finDividend').textContent = (d.dividend_perc || '--') + '%';
     }).catch(e => console.warn('financials error', e));
 
-        fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
-            const container = document.getElementById('newsList');
-            if (data.available === false || !data.data || data.data.length === 0) {
-                container.innerHTML = '<div class="empty-state">No news available</div>';
-                return;
-            }
-            const news = data.data;
-            container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
-        }).catch(e => console.warn('news error', e));
+    // News
+    fetch(`/company/${fincode}/news/`).then(r => r.json()).then(data => {
+        const container = document.getElementById('newsList');
+        if (!container) return;
+        if (data.available === false || !data.data || data.data.length === 0) {
+            container.innerHTML = '<div class="empty-state">No news available</div>';
+            return;
+        }
+        const news = data.data;
+        container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    }).catch(e => console.warn('news error', e));
 
-        fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
-            const container = document.getElementById('announcementsList');
-            if (data.available === false || !data.data || data.data.length === 0) {
-                container.innerHTML = '<div class="empty-state">No announcements available</div>';
-                return;
-            }
-            const announcements = data.data;
-            container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
-        }).catch(e => console.warn('announcements error', e));
+    // Announcements
+    fetch(`/company/${fincode}/announcements/`).then(r => r.json()).then(data => {
+        const container = document.getElementById('announcementsList');
+        if (!container) return;
+        if (data.available === false || !data.data || data.data.length === 0) {
+            container.innerHTML = '<div class="empty-state">No announcements available</div>';
+            return;
+        }
+        const announcements = data.data;
+        container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+    }).catch(e => console.warn('announcements error', e));
 
-        fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
-            const container = document.getElementById('actionsList');
-            if (data.available === false || !data.actions || data.actions.length === 0) {
-                container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
-                return;
-            }
-            const actions = data.actions;
-            container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
-        }).catch(e => console.warn('actions error', e));
+    // Corporate Actions
+    fetch(`/company/${fincode}/corporate-actions/`).then(r => r.json()).then(data => {
+        const container = document.getElementById('actionsList');
+        if (!container) return;
+        if (data.available === false || !data.actions || data.actions.length === 0) {
+            container.innerHTML = '<div class="empty-state">No corporate actions available</div>';
+            return;
+        }
+        const actions = data.actions;
+        container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+    }).catch(e => console.warn('actions error', e));
 
     // Yahoo Finance
     fetch(`/company/${fincode}/yfinance/?period=1y&interval=1mo`).then(r => r.json()).then(data => {
@@ -308,14 +307,11 @@ async function selectCompany(fincode) {
 }
 
 // ---------- REFRESH CHART ----------
-const refreshBtn = document.getElementById('refreshChartBtn');
-if (refreshBtn) {
-    refreshBtn.addEventListener('click', function() {
-        if (currentFincode && typeof initEChartsChart === 'function') {
-            initEChartsChart(currentFincode);
-        }
-    });
-}
+document.getElementById('refreshChartBtn')?.addEventListener('click', function() {
+    if (currentFincode && typeof initEChartsChart === 'function') {
+        initEChartsChart(currentFincode);
+    }
+});
 
 // ---------- LOADING PLACEHOLDERS ----------
 function showLoadingPlaceholders() {
@@ -558,18 +554,36 @@ function setActiveTab(tabName) {
     localStorage.setItem('lastActiveTab', tabName);
 }
 
-document.querySelectorAll('.tab-button').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        const tabName = this.dataset.tab;
-        if (tabName) setActiveTab(tabName);
+function initTabs() {
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.removeEventListener('click', handleTabClick);
+        btn.addEventListener('click', handleTabClick);
     });
-});
+}
 
-const lastTab = localStorage.getItem('lastActiveTab');
-if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
-    setActiveTab(lastTab);
+function handleTabClick(e) {
+    const tabName = this.dataset.tab;
+    if (tabName) setActiveTab(tabName);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        initTabs();
+        const lastTab = localStorage.getItem('lastActiveTab');
+        if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
+            setActiveTab(lastTab);
+        } else {
+            setActiveTab('overview');
+        }
+    });
 } else {
-    setActiveTab('overview');
+    initTabs();
+    const lastTab = localStorage.getItem('lastActiveTab');
+    if (lastTab && ['overview', 'financials', 'news', 'analysis', 'stocksbot'].includes(lastTab)) {
+        setActiveTab(lastTab);
+    } else {
+        setActiveTab('overview');
+    }
 }
 
 // ---------- UTILITY ----------
