@@ -13,10 +13,24 @@ jobs:
       - name: Extract Jira issue key
         id: jira
         run: |
+          # Try to get key from the merge commit message
           COMMIT_MSG=$(git log -1 --pretty=%B)
           JIRA_KEY=$(echo "$COMMIT_MSG" | grep -oE '[A-Z]+-[0-9]+' | head -1)
+
+          # If not found, try to get it from the PR title via GitHub API
+          if [ -z "$JIRA_KEY" ]; then
+            PR_NUMBER=$(echo "$COMMIT_MSG" | grep -oE '#[0-9]+' | head -1 | tr -d '#')
+            if [ -n "$PR_NUMBER" ]; then
+              PR_TITLE=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER" | jq -r '.title')
+              JIRA_KEY=$(echo "$PR_TITLE" | grep -oE '[A-Z]+-[0-9]+' | head -1)
+            fi
+          fi
+
           echo "JIRA_KEY=$JIRA_KEY" >> $GITHUB_OUTPUT
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy to EC2
         env:
