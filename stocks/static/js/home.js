@@ -130,6 +130,27 @@ if (backToEmptyBtn) {
     backToEmptyBtn.addEventListener('click', resetToEmptyState);
 }
 
+// ---------- LIVE PRICE ----------
+function fetchLivePrice(symbol) {
+    const badge = document.getElementById('livePriceBadge');
+    const priceEl = document.getElementById('livePriceValue');
+    if (!badge || !priceEl) return;
+
+    fetch(`/live-price/${symbol}/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.price) {
+                priceEl.textContent = `₹ ${data.price.toFixed(2)}`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        })
+        .catch(() => {
+            badge.classList.add('hidden');
+        });
+}
+
 // ---------- SELECT COMPANY ----------
 async function selectCompany(fincode) {
     currentFincode = fincode;
@@ -162,6 +183,11 @@ async function selectCompany(fincode) {
             document.getElementById('companyChairman').textContent = c.chairman || 'N/A';
             document.getElementById('companyMD').textContent = c.mdir || 'N/A';
             document.getElementById('companyCS').textContent = c.cosec || 'N/A';
+
+            // Fetch live price if symbol exists
+            if (c.symbol) {
+                fetchLivePrice(c.symbol);
+            }
         }
         if (marketData.available !== false) {
             const m = marketData.data;

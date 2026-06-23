@@ -251,7 +251,13 @@
                                         <span class="px-2 py-0.5 bg-tertiary/10 text-tertiary border border-tertiary/20 rounded font-label text-[10px] tracking-wider uppercase">NSE</span>
                                         <span id="companyStatus" class="text-on-surface-variant font-data-sm text-data-sm">-</span>
                                     </div>
-                                    <h2 id="companyName" class="font-display text-display text-on-background tracking-tight">-</h2>
+                                    <!-- Hero title with live price badge -->
+                                    <div class="flex items-center gap-3 mt-1 flex-wrap">
+                                        <h2 id="companyName" class="font-display text-display text-on-background tracking-tight">-</h2>
+                                        <span id="livePriceBadge" class="hidden text-sm font-medium text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
+                                            <span id="livePriceValue">--</span>
+                                        </span>
+                                    </div>
                                     <div class="flex items-center gap-3 mt-1">
                                         <span id="companySymbol" class="font-data-lg text-data-lg text-primary">-</span>
                                         <span id="companyIndustry" class="font-data-md text-data-md text-on-surface-variant">-</span>
