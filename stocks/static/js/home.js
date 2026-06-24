@@ -151,7 +151,8 @@ async function selectCompany(fincode) {
     dashboardContent.style.display = 'block';
     sidebar.style.display = 'flex';
 
-    setActiveTab('financials');
+    // Show Overview tab immediately
+    setActiveTab('overview');
     searchResults.classList.remove('visible');
     showLoadingPlaceholders();
 
@@ -177,7 +178,6 @@ async function selectCompany(fincode) {
             document.getElementById('companyMD').textContent = c.mdir || 'N/A';
             document.getElementById('companyCS').textContent = c.cosec || 'N/A';
 
-            // ----- FETCH LIVE PRICE -----
             if (c.symbol) {
                 fetchLivePrice(c.symbol);
             }
@@ -192,7 +192,6 @@ async function selectCompany(fincode) {
             document.getElementById('marketValue').textContent = '₹ ' + (m.value || '--');
         }
 
-        // ---------- CHART: Only ECharts ----------
         if (typeof initEChartsChart === 'function') {
             initEChartsChart(fincode);
         }
@@ -202,7 +201,7 @@ async function selectCompany(fincode) {
         showError('Unable to load company data');
     }
 
-    // ---------- BACKGROUND DATA (ALWAYS RUN, EVEN IF CHART FAILS) ----------
+    // ---------- BACKGROUND DATA (always run) ----------
     // Shareholding
     fetch(`/company-shareholding/${fincode}/`).then(r => r.json()).then(data => {
         if (data.available === false) {
@@ -253,7 +252,13 @@ async function selectCompany(fincode) {
             return;
         }
         const news = data.data;
-        container.innerHTML = news.map(item => `<div class="news-item"><div class="item-title">${escapeHtml(item.heading || 'No title')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+        let html = '';
+        news.forEach(item => {
+            const title = item.heading || 'No title';
+            const date = item.date || '';
+            html += `<div class="news-item"><div class="item-title">${escapeHtml(title)}</div><div class="item-date">${escapeHtml(date)}</div></div>`;
+        });
+        container.innerHTML = html;
     }).catch(e => console.warn('news error', e));
 
     // Announcements
@@ -265,7 +270,13 @@ async function selectCompany(fincode) {
             return;
         }
         const announcements = data.data;
-        container.innerHTML = announcements.map(item => `<div class="announcement-item"><div class="item-title">${escapeHtml(item.caption || 'No caption')}</div><div class="item-date">${item.datetime || ''}</div></div>`).join('');
+        let html = '';
+        announcements.forEach(item => {
+            const caption = item.caption || 'No caption';
+            const datetime = item.datetime || '';
+            html += `<div class="announcement-item"><div class="item-title">${escapeHtml(caption)}</div><div class="item-date">${escapeHtml(datetime)}</div></div>`;
+        });
+        container.innerHTML = html;
     }).catch(e => console.warn('announcements error', e));
 
     // Corporate Actions
@@ -277,7 +288,13 @@ async function selectCompany(fincode) {
             return;
         }
         const actions = data.actions;
-        container.innerHTML = actions.map(item => `<div class="action-item"><div class="item-title">${escapeHtml(item.details || 'No details')}</div><div class="item-date">${item.date || ''}</div></div>`).join('');
+        let html = '';
+        actions.forEach(item => {
+            const details = item.details || 'No details';
+            const date = item.date || '';
+            html += `<div class="action-item"><div class="item-title">${escapeHtml(details)}</div><div class="item-date">${escapeHtml(date)}</div></div>`;
+        });
+        container.innerHTML = html;
     }).catch(e => console.warn('actions error', e));
 
     // Yahoo Finance
@@ -331,7 +348,7 @@ function showLoadingPlaceholders() {
     if (aiSummary) aiSummary.innerHTML = '<div class="loading-placeholder"><span class="spinner"></span> Loading AI analysis...</div>';
 }
 
-// ---------- STOCKSBOT (Unrestricted Chat) ----------
+// ---------- STOCKSBOT ----------
 let stocksbotHistory = [];
 let stocksbotCurrentQuestion = null;
 const stocksbotMessages = document.getElementById('stocksbotMessages');
@@ -512,7 +529,7 @@ document.querySelectorAll('.stocksbot-prompt-chip').forEach(chip => {
     });
 });
 
-// ---------- AI CHIPS (OpenAI only) ----------
+// ---------- AI CHIPS (OpenAI) ----------
 const openaiChip = document.getElementById('openaiChip');
 
 if (openaiChip) {
@@ -533,6 +550,20 @@ if (openaiChip) {
 
 // ---------- TABS ----------
 function setActiveTab(tabName) {
+    // Hide all tabs and remove active class
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
+    });
+
+    // Show the target tab
+    const target = document.getElementById(tabName + 'Tab');
+    if (target) {
+        target.classList.add('active');
+        target.style.display = 'block';
+    }
+
+    // Update sidebar buttons
     document.querySelectorAll('#sidebar .tab-button').forEach(btn => {
         const isActive = btn.dataset.tab === tabName;
         if (isActive) {
@@ -543,14 +574,13 @@ function setActiveTab(tabName) {
             btn.classList.add('text-on-surface-variant', 'hover:bg-surface-container-high');
         }
     });
+
+    // Update mobile nav (if present)
     document.querySelectorAll('#mobileNav .tab-button').forEach(btn => {
-        const isActive = btn.dataset.tab === tabName;
-        btn.classList.toggle('text-primary', isActive);
-        btn.classList.toggle('text-on-surface-variant', !isActive);
+        btn.classList.toggle('text-primary', btn.dataset.tab === tabName);
+        btn.classList.toggle('text-on-surface-variant', btn.dataset.tab !== tabName);
     });
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    const target = document.getElementById(tabName + 'Tab');
-    if (target) target.classList.add('active');
+
     localStorage.setItem('lastActiveTab', tabName);
 }
 
@@ -566,6 +596,7 @@ function handleTabClick(e) {
     if (tabName) setActiveTab(tabName);
 }
 
+// Initialize tabs and restore last active tab
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         initTabs();
