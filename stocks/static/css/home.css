@@ -417,3 +417,43 @@ html:not(.dark) .action-item:hover {
     border-left-color: #10b981;
 }
 
+
+/* Existing content tab fixes (keep) */
+.tab-content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+.tab-content > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* New sidebar tab button fixes */
+#sidebar nav {
+    gap: 0 !important;
+}
+#sidebar .tab-button {
+    width: 100%;
+    margin: 0 !important;
+    box-sizing: border-box;
+}
+#sidebar .tab-button:not(:last-child) {
+    margin-bottom: 4px;
+}
+
+/* ----- Force sidebar buttons to have zero gap and full width ----- */
+#sidebar nav.flex.flex-col.gap-1 {
+    gap: 0 !important;
+}
+
+#sidebar .tab-button {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;  /* adjust as needed */
+    box-sizing: border-box !important;
+}
+
+/* Add a tiny visual separation between buttons without creating a clickable gap */
+#sidebar .tab-button:not(:last-child) {
+    margin-bottom: 4px !important;
+}
