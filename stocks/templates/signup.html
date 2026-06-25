@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up – StockAI</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-shell">
+        <!-- Left Panel – Branding -->
+        <div class="brand-panel">
+            <div class="brand-mark">
+                <div class="logo-badge">📊</div>
+                <div class="name">
+                    <strong>StockAI</strong>
+                    <span>Institutional market intelligence</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="eyebrow">Research for</div>
+                <h1>Modern investors.</h1>
+                <p>Access a professional finance workspace for analysis, monitoring, and decision support.</p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <strong>Corporate-grade workspace</strong>
+                    <span>Built to feel like an enterprise financial terminal.</span>
+                </div>
+                <div class="feature-card">
+                    <strong>Clear market focus</strong>
+                    <span>Designed for analysts, investors, and research teams.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel – Signup Form -->
+        <div class="form-panel">
+            <h2>Create Account</h2>
+            <p class="subtext">Join StockAI for free</p>
+
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="first_name">Full Name</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Your full name" required>
+                </div>
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+                </div>
+                <div class="field">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+
+            <p style="margin-top: 20px; text-align: center; color: var(--muted);">
+                Already have an account? <a href="{% url 'login' %}">Log In</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

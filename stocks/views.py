@@ -24,6 +24,8 @@ from .services.corporate_actions_service import get_company_corporate_actions_da
 from .services.yfinance_services import get_yfinance_data
 from .services.ai_retrieval_service import build_context
 from .models import PriceData
+from django.contrib.auth.forms import UserCreationForm
+
 
 
 # LOGIN PAGE
@@ -37,6 +39,40 @@ def login_page(request):
             return redirect("home")
         return render(request, "login.html", {"error": "Invalid username or password"})
     return render(request, "login.html")
+
+
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+
+def signup_page(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Basic validation
+        if password != confirm_password:
+            return render(request, 'signup.html', {'error': 'Passwords do not match.'})
+
+        if User.objects.filter(username=username).exists():
+            return render(request, 'signup.html', {'error': 'Username already taken.'})
+
+        if User.objects.filter(email=email).exists():
+            return render(request, 'signup.html', {'error': 'Email already registered.'})
+
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name
+        )
+        user.save()
+        return redirect('login')
+
+    return render(request, 'signup.html')
 
 
 # HOME PAGE

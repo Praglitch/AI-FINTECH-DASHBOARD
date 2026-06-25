@@ -23,7 +23,8 @@ from stocks.views import (
     stocksbot_chat,
     stocksbot_page,
     price_data_api,
-    live_price,          # <-- added
+    live_price,         
+    signup_page
 )
 
 urlpatterns = [
@@ -50,5 +51,6 @@ urlpatterns = [
     path('stocksbot/chat/', stocksbot_chat, name='stocksbot_chat'),
     path('stocksbot/', stocksbot_page, name='stocksbot_page'),
     path('api/price/<str:symbol>/', price_data_api, name='price_data_api'),
-    path('live-price/<str:symbol>/', live_price, name='live_price'),   # <-- added
+    path('live-price/<str:symbol>/', live_price, name='live_price'),
+     path('signup/', signup_page, name='signup'),
 ]
