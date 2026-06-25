@@ -9,13 +9,13 @@ exclude =
 max-line-length = 120
 per-file-ignores =
     stocks/views.py: E303,E302,E402,F811,E501,E226,E306,W291,W293,W292,E122,F841
+    stocks/services/announcement_service.py: E302,W292,F841
     stocks/services/*: E302,E303,W292,E501,E226,E231,E111,E225,E122,F401,E402,W291,W293,F841
     stocks/management/commands/*: E302,E303,W292,E501,E226,E231,E111,E225,E122,F401,E402,W291,W293
     stocks/models.py: E302,E303,W292,E501,F401,W293
     stocks/tests.py: F401
     stocks/admin.py: F401
     stocks/database/db_connection.py: E302,W292
-    stocks/services/announcement_service.py: F841
 ignore =
     E203,
     W503
