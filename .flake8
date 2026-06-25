@@ -7,17 +7,12 @@ exclude =
     .git,
     __pycache__
 max-line-length = 120
+per-file-ignores =
+    stocks/views.py: E303,E302,E402,F811,E501,E226,E306,W291,W293,W292,E122
+    stocks/services/*: E302,E303,W292,E501,E226,E231,E111,E225,E122,F401,E402,W291,W293
+    stocks/management/commands/*: E302,E303,W292,E501,E226,E231,E111,E225,E122,F401,E402,W291,W293
+    stocks/models.py: E302,E303,W292,E501,F401,W293
+    stocks/tests.py: F401
 ignore =
     E203,
-    W503,
-    F401,
-    F841,
-    E302,
-    E303,
-    W292,
-    E501,
-    E226,
-    E231,
-    E111,
-    E225,
-    E122
+    W503
