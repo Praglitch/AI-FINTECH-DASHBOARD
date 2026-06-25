@@ -2,7 +2,6 @@ import json
 import requests
 import os
 import re
-import difflib
 import yfinance as yf
 from django.utils import timezone
 from openai import OpenAI
@@ -24,7 +23,7 @@ from .services.corporate_actions_service import get_company_corporate_actions_da
 from .services.yfinance_services import get_yfinance_data
 from .services.ai_retrieval_service import build_context
 from .models import PriceData
-from django.contrib.auth.forms import UserCreationForm
+
 
 
 

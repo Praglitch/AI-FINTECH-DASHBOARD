@@ -1,0 +1,23 @@
+[flake8]
+exclude =
+    stocks/proto,
+    stocks/migrations,
+    staticfiles,
+    .venv,
+    .git,
+    __pycache__
+max-line-length = 120
+ignore =
+    E203,
+    W503,
+    F401,
+    F841,
+    E302,
+    E303,
+    W292,
+    E501,
+    E226,
+    E231,
+    E111,
+    E225,
+    E122
